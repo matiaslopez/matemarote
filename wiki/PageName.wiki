@@ -120,9 +120,11 @@ En la definicion del formato.
    * el archivo de los lentes es _/res/svg/lentes/lentes.svg_
 
 === Notacion corta de un nivel de memoria ===
+{{{
 GAME_FILE = [nivel_inicial, perdidas, victorias, numero_de_trials, [TRIAL, TRIAL,...]]
 TRIAL = [nivel, agrupacion, [FICHA, FICHA,...]]
 FICHA = [marco, fondo, sombrilla, baldes, estrellas, personaje, lentes]
+}}}
 
 == Formato del LOG_FILE de memoria ==
 Una vez guardado el log crudo, se puede parsear para generar un LOG_FILE, tambien en formato de listas anidadas. En el log simplemente unimos cada TRIAL con la respuesta correspondiente (RESPONSE). 
@@ -165,10 +167,11 @@ Una vez guardado el log crudo, se puede parsear para generar un LOG_FILE, tambie
    * la posicion y de la ficha
 
 === Notacion corta de un GAME_LOG de memoria ===
-
+{{{
 GAME_LOG = [TRIAL_RESPONSE, TRIAL_RESPONSE, ...]
 TRIAL_RESPONSE = [TRIAL, RESPONSE]
 RESPONSE = [correct, [CHOICE, CHOICE, ...]]
 CHOICE = [card_id, [last_mouse_x, last_mouse_y], [MOUSEMOVE, MOUSEMOVE, ...], [CARD_POS, CARD_POS, ...]]
 MOUSEMOVE = [x,y,time]
 CARD_POS = [x,y]
+}}}
