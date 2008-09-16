@@ -59,27 +59,73 @@ En la definicion del formato.
  * fondo (_numero entero de 1 a 13 inclusive_):
    * siempre debe haber un fondo
    * Es el color o trama de fondo a usar en la ficha
+     # ../../res/svg/fondos/playa.svg
+     # ../../res/svg/fondos/azul.svg
+     # ../../res/svg/fondos/celeste.svg
+     # ../../res/svg/fondos/gris.svg
+     # ../../res/svg/fondos/marron.svg
+     # ../../res/svg/fondos/naranja.svg
+     # ../../res/svg/fondos/rojo.svg
+     # ../../res/svg/fondos/rosa.svg
+     # ../../res/svg/fondos/verde.svg
+     # ../../res/svg/fondos/violeta.svg
      # ../../res/svg/fondos/amarillo.svg
      # ../../res/svg/fondos/fucsia.svg
-     # ../../res/svg/fondos/marron.svg
-     # ../../res/svg/fondos/rojo.svg
-     # ../../res/svg/fondos/violeta.svg
-     # ../../res/svg/fondos/azul.svg
-     # ../../res/svg/fondos/gris.svg
-     # ../../res/svg/fondos/naranja.svg
-     # ../../res/svg/fondos/rosa.svg
-     # ../../res/svg/fondos/celeste.svg
      # ../../res/svg/fondos/marino.svg (celeste)
-     # ../../res/svg/fondos/playa.svg
-     # ../../res/svg/fondos/verde.svg
 
-(Aca va una notacion mas corta)
+ * sombrilla (_numero entero de 0 a 12 inclusive _)
+   * 0 significa que no hay sombrilla
+   * valores:
+     # violeta _../../res/svg/sombrillas/1.svg_
+     # fucsia _../../res/svg/sombrillas/2.svg_
+     # verde _../../res/svg/sombrillas/3.svg_
+     # marron _../../res/svg/sombrillas/4.svg_
+     # celeste _../../res/svg/sombrillas/5.svg_
+     # rosa _../../res/svg/sombrillas/6.svg_
+     # naranja _../../res/svg/sombrillas/7.svg_
+     # amarillo _../../res/svg/sombrillas/8.svg_
+     # rojo _../../res/svg/sombrillas/9.svg_
+     # rojo/naranja _../../res/svg/sombrillas/10.svg_
+     # gris _../../res/svg/sombrillas/11.svg_
+     # azul _../../res/svg/sombrillas/12.svg_
+
+ * baldes (_numero entero de 0 a 2 inclusive_)
+   * 0 significa que no hay baldes
+   * valores:
+     # 2 baldes _../../res/svg/baldes/2.svg_
+     # 4 baldes _../../res/svg/baldes/4.svg_
+
+ * estrellas (_numero entero de 0 a 10 inclusive_)
+  * El valor se corresponde con la cantida de estrellas mostradas
+  * valores:
+     # _../../res/svg/estrellas/1.svg_
+     # _../../res/svg/estrellas/2.svg_
+     # _../../res/svg/estrellas/3.svg_
+     # _../../res/svg/estrellas/4.svg_
+     # _../../res/svg/estrellas/5.svg_
+     # _../../res/svg/estrellas/6.svg_
+     # _../../res/svg/estrellas/7.svg_
+     # _../../res/svg/estrellas/8.svg_
+     # _../../res/svg/estrellas/9.svg_
+     # _../../res/svg/estrellas/10.svg_
+
+ * personaje (_numero entero de 0 a 3 inclusive_)
+   * 0 significa que no hay personaje
+   * valores:
+     # ana parada _../../res/svg/personaje/anaparada.svg_
+     # ana sentada _../../res/svg/personaje/anareposera.svg_
+     # ono parado _../../res/svg/personaje/onoplaya.svg_
+
+ * lentes (_numero entero de 0 a 1 inclusive_)<- jeje, o sea, 0 o 1
+   * el archivo de los lentes es _../../res/svg/lentes/lentes.svg_
+
+== Notacion corta de un nivel de memoria ==
 JUEGO = [nivel_inicial,
          perdidas,
          victorias,
          numero_de_trials,
          [TRIAL, TRIAL,...]]
-TRIAL = [nivel, agrupa_por, [FICHA, FICHA,...]]
+TRIAL = [nivel, agrupacion, [FICHA, FICHA,...]]
 FICHA = [marco, fondo, sombrilla, baldes, estrellas, personaje, lentes]
 
 Una vez guardado el log crudo, se puede parsear para generar un log que,
