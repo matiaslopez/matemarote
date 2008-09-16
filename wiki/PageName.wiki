@@ -41,28 +41,37 @@ En la definicion del formato.
 
 === Una FICHA es una lista con ===
  * marco (_numero entero de 1 a 12 inclusive_)
+   * Siempre debe haber un marco
    * Es el marco a usar para la ficha, estos son los valores:
      # Cuadrado con la esquina sup.der. redondeada _../../res/svg/marcos/casiuncuadrado.svg_
      # Circulo _../../res/svg/marcos/circulo.svg_
      # Nubecita _../../res/svg/marcos/circulosss.svg_
      # Cuadrado redondeado en todas las esquinas _../../res/svg/marcos/cuadrado.svg_
      # Cuadrado con las esquinas sup.der. e inf.izq. redondeadas _../../res/svg/marcos/doble gota.svg_
-		public static var marco_5:Class;
-		[Embed(source="../../res/svg/marcos/escudo.svg")]
-		public static var marco_6:Class;
-		[Embed(source="../../res/svg/marcos/escudo2.svg")]
-		public static var marco_7:Class;
-		[Embed(source="../../res/svg/marcos/estrella.svg")]
-		public static var marco_8:Class;
-		[Embed(source="../../res/svg/marcos/gota.svg")]
-		public static var marco_9:Class;
-		[Embed(source="../../res/svg/marcos/poligono.svg")]
-		public static var marco_10:Class;
-		[Embed(source="../../res/svg/marcos/raro1.svg")]
-		public static var marco_11:Class;
-		[Embed(source="../../res/svg/marcos/raro2.svg")]
-		public static var marco_12:Class;
-* las distintas partecitas que la componen.
+     # Cuadrado con las esquinas inf.der. e inf.izq. redondeadas _../../res/svg/marcos/escudo.svg_
+     # Cuadrado con las esquinas sup.der. y sup.izq redondeadas _../../res/svg/marcos/escudo2.svg_
+     # Estrella de 20 puntas _../../res/svg/marcos/estrella.svg_
+     # Cuadrado con las esquinas inf.izq, sup.der. y sup.izq. redondeadas. _../../res/svg/marcos/gota.svg_
+     # Estrella de 8 puntas _../../res/svg/marcos/poligono.svg_
+     # Estrella de 8 puntas en la mitad superior, hexagono en la inferior _../../res/svg/marcos/raro1.svg_
+     # Estrella de 8 puntas en la mitad superior, circulo en la inferior _../../res/svg/marcos/raro2.svg_
+
+ * fondo (_numero entero de 1 a 13 inclusive_):
+   * siempre debe haber un fondo
+   * Es el color o trama de fondo a usar en la ficha
+     # ../../res/svg/fondos/amarillo.svg
+     # ../../res/svg/fondos/fucsia.svg
+     # ../../res/svg/fondos/marron.svg
+     # ../../res/svg/fondos/rojo.svg
+     # ../../res/svg/fondos/violeta.svg
+     # ../../res/svg/fondos/azul.svg
+     # ../../res/svg/fondos/gris.svg
+     # ../../res/svg/fondos/naranja.svg
+     # ../../res/svg/fondos/rosa.svg
+     # ../../res/svg/fondos/celeste.svg
+     # ../../res/svg/fondos/marino.svg (celeste)
+     # ../../res/svg/fondos/playa.svg
+     # ../../res/svg/fondos/verde.svg
 
 (Aca va una notacion mas corta)
 JUEGO = [nivel_inicial,
