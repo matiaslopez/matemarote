@@ -1,0 +1,86 @@
+#summary format documentation
+
+= Formatos de los juegos y logs =
+Al iniciarse un juego, esta carga un archivo GAME_FILE donde se le especifican distintas opciones, asi como una lista de trials a utilizar.
+
+La sintaxis del archivo GAME_FILE es una 'lista'. (formato muy facil de manipular con python, javascript y flash).
+Una lista es un conjunto de ITEM, encerrados entre corchetes, donde un ITEM a la vez puede ser una lista.
+
+por ejemplo, esta es una lista de 3 items, cuyo tercer item es a la vez, una lista de 2 items.
+ej: [ITEM, ITEM, [ITEM, ITEM]]
+
+En la definicion del formato.
+
+
+= Memoria =
+
+== Formato del GAME_FILE ==
+
+=== En el GAME_FILE de un juego de memoria especificamos: ===
+ * nivel_inicial (_numero entero_):
+   * Es el nivel en el que se empieza jugando.
+   * *tiene* que haber al menos un trial de este nivel.
+ * perdidas (_numero entero_):
+   * La cantidad de veces consecutivas que uno debe perder antes de disminuir el nivel.
+ * victorias (_numero entero_):
+   * La cantidad de veces consecutivas que uno debe ganar antes de aumentar el nivel.
+ * numero_de_trials (_numero entero_):
+   * La cantidad de trials a jugar, luego de jugar esta cantidad, el juego termina.
+ * trials (_lista de TRIAL_):
+   * La lista de TRIAL disponibles para el juego.
+   * Cuando el juego necesita un trial de un nivel en particular, elige al azar entre todos los TRIAL que tienen ese nivel.
+
+=== Un TRIAL es una lista con ===
+ * nivel (_numero entero_):
+   * El nivel de dificultad del trial.
+ * agrupacion (_numero de 0 a 7 inclusive_):
+   * 0 significa que no hay agrupamiento.
+   * De no ser 0, el valor es el indice (contando desde 1) del elemento de la FICHA por el que agrupamos. ver la descripcion de FICHA para ver la correspondencia indice<>elemento.
+ * fichas (_lista de FICHA_):
+   * La lista de FICHA a usar para el trial.
+
+=== ...y para cada FICHA tenemos: ===
+* las distintas partecitas que la componen.
+
+(Aca va una notacion mas corta)
+JUEGO = [nivel_inicial,
+         perdidas,
+         victorias,
+         numero_de_trials,
+         [TRIAL, TRIAL,...]]
+TRIAL = [nivel, agrupa_por, [FICHA, FICHA,...]]
+FICHA = [marco, fondo, sombrilla, baldes, estrellas, personaje, lentes]
+
+Una vez guardado el log crudo, se puede parsear para generar un log que,
+tambien en formato de listas anidadas, nos muestra:
+* una lista de TRIAL_RESPONSE
+...donde cada TRIAL_RESPONSE tiene:
+* el TRIAL jugado (como vimos mas arriba)
+* el RESPONSE, o respuesta del jugador a ese trial.
+...cada RESPONSE tiene:
+* el resultado, correcto o incorrecto del trial
+* una lista de CHOICES que hizo el jugador en cada instancia
+...cada CHOICE tiene:
+* el numero de ficha elegida (con respecto a como estan en el TRIAL)
+* la ultima posicion del mouse, en una lista [x,y]
+* una lista de objetos MOUSEMOVE, representando los distintos
+movimientos del mouse hasta elegir una ficha.
+* una lista de las posiciones de cada ficha (los llamamos CARD_POS)
+...cada MOUSEMOVE tiene:
+* la posicion x de ese movimiento.
+* la posicion y de ese movimiento
+* los milisegundos desde el inicio del juego
+... y cada CARD_POS tiene:
+* la posicion x de la ficha
+* la posicion y de la ficha
+
+(ahora, en resumen)
+GAME_LOG = [TRIAL_RESPONSE, TRIAL_RESPONSE, ...]
+TRIAL_RESPONSE = [TRIAL, RESPONSE]
+RESPONSE = [result, [CHOICE, CHOICE, ...]]
+CHOICE = [card_id,
+          [last_mouse_x, last_mouse_y],
+          [MOUSEMOVE, MOUSEMOVE, ...],
+          [CARD_POS, CARD_POS, ...]]
+MOUSEMOVE = [x,y,time]
+CARD_POS = [x,y]
