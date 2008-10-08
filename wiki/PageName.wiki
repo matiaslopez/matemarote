@@ -245,8 +245,8 @@ CARD_POS = [x,y]
 
 === Notacion corta de un GAME_FILE de planning ===
 {{{
-GAME_FILE = [nivel_inicial, perdidas, victorias, [TRIAL, TRIAL, ..]]
-TRIAL = [nivel, max_moves, topleft_house, topright_house, bottomleft_house, bottomright_house, topleft_char, topright_char, bottomleft_char, bottomright_char]
+GAME_FILE = [nivel_inicial, perdidas, victorias, trial_count, [TRIAL, TRIAL, ..]]
+TRIAL = [nivel, min_moves, max_moves, rotacion, topleft_house, topright_house, bottomleft_house, bottomright_house, topleft_char, topright_char, bottomleft_char, bottomright_char]
 }}}
 
 == Formato del LOG_FILE de planning ==
