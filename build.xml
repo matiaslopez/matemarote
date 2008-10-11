@@ -1,0 +1,43 @@
+<project name="Test Flash Build" default="Debug Planning" basedir=".">
+	<property name="mxmlc" location="/home/nubis/eclipse/flex_sdk/bin/mxmlc"/>
+	<target name="Debug Planning">
+		<exec executable="${mxmlc}" dir="." failonerror="true">
+			<arg line="src/planning.mxml"/>
+			<arg line="-default-size 800 600"/>
+			<arg line="-debug=true"/>
+			<arg line="-strict"/>
+			<arg line="-output server/mate_marote/static/planning.swf"/>
+		</exec>
+		<exec executable="firefox-2">
+			<arg line="http://localhost:8080/debug/"/>
+		</exec>
+	</target>
+	<target name="Debug Memory">
+		<exec executable="${mxmlc}" dir="." failonerror="true">
+			<arg line="src/memory.mxml"/>
+			<arg line="-default-size 800 600"/>
+			<arg line="-debug=true"/>
+			<arg line="-strict"/>
+			<arg line="-output server/mate_marote/static/memory.swf"/>
+		</exec>
+		<exec executable="firefox-2">
+			<arg line="http://localhost:8080/debug/"/>
+		</exec>
+	</target>
+	<target name="Release Planning">
+		<exec executable="${mxmlc}" dir="." failonerror="true">
+			<arg line="src/planning.mxml"/>
+			<arg line="-default-size 800 600"/>
+			<arg line="-strict"/>
+			<arg line="-output server/mate_marote/static/planning.swf"/>
+		</exec>
+	</target>
+	<target name="Release Memory">
+		<exec executable="${mxmlc}" dir="." failonerror="true">
+			<arg line="src/memory.mxml"/>
+			<arg line="-default-size 800 600"/>
+			<arg line="-strict"/>
+			<arg line="-output server/mate_marote/static/memory.swf"/>
+		</exec>
+	</target>
+</project>

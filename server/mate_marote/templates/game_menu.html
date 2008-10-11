@@ -1,0 +1,89 @@
+<html>
+<head>
+	<title>Mate Marote</title>
+	<style type="text/css">
+		body {
+			background: #3D3D3D;
+			font-family: Helvetica;
+			color: white;
+			text-align: center;
+		}
+		h1 {
+			font-size: 30px;
+			font-weight: bold;
+			text-align: center;
+		}
+		h2 {
+			padding: 0px;
+			margin: 1px;
+			text-align: center;
+			color: black;
+		}
+		.juego {
+			margin-left: 20%;
+			margin-bottom: 30px;
+			padding: 4px;
+			width: 60%;
+			border: solid 3px #DDDDDD;
+			background-color: #CDCDCD;
+		}
+		a, .button {
+			text-decoration: none;
+			color: black;
+			font-weight: bold;
+			padding: 5px;
+			border: solid 1px #7BC5F0;
+			background-color: #6BA5E0;
+		}
+		a:hover{
+			background-color: #7BC5F0;
+		}
+		p,label {
+			color: #3D3D3D;
+		}
+		.field {
+			font-size: 15px;
+			text-align: left;
+		}
+	</style>
+</head>
+<body>
+	<h1>Bienvenido a los juegos de Mate Marote</h1>
+	<div class="juego">
+		<h2>Haciendo memoria</h2>
+		<p>Hacele click una vez a cada ficha, usando la memoria para no repetir.</p>
+		<form action="{% url memory %}" method="get">
+			{% with memory_form as form %}
+				{% include 'game_form_widget.html' %}
+			{% endwith %}
+		</form>
+	</div>
+	
+	<div class="juego">
+		<h2>Cada uno para su casa</h2>
+		<p>Ana, Pancho y Nubis quieren jugar en sus casas del &aacute;rbol, ayudalos a llegar!</p>
+		<form action="{% url planning %}" method="get">
+			{% with planning_form as form %}
+				{% include 'game_form_widget.html' %}
+			{% endwith %}
+		</form>
+	</div>
+	
+	<div class="juego">
+		<h2>Barba roja</h2>
+		<p>Econtr&aacute; la pelotita amarilla.</p>
+		<form action="{% url dummygame "redbeard" %}" method="get">
+			<input type="submit" value="Jugar" class="button"/>
+		</form>
+	</div>
+	
+	<div class="juego">
+		<h2>Rally</h2>
+		<p>Consegu&iacute; el mejor tiempo en cada pista.</p>
+		<form action="{% url dummygame "rally" %}" method="get">
+			<input type="submit" value="Jugar" class="button"/>
+		</form>
+	</div>
+	
+</body>
+</html>

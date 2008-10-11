@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?>
+<planning:PlanningGame backgroundColor="#555555" backgroundGradientAlphas="1" width="800" height="600" xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" xmlns:planning="planning.*">
+</planning:PlanningGame>
