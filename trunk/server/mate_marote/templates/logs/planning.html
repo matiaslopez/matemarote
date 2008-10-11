@@ -1,0 +1,6 @@
+{% extends "logs/base_game_log.html" %}
+
+{% block listing_link %}/admin/mate_marote/planninggame/{% endblock %}
+{% block other_logs %}
+	<li><a href="{% url full_planning_log game.id %}">Log crudo completo</a></li>
+{% endblock %}

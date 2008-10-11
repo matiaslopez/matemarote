@@ -1,0 +1,39 @@
+{% extends "admin/base_site.html" %}
+{% load adminmedia %}
+{% block stylesheet %}{% admin_media_prefix %}css/changelists.css{% endblock %}
+
+{% block bodyclass %}flex{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+	<a href="{% block listing_link %}{% endblock %}">Volver al listado</a>
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>Viendo {{ game }}</h1>
+<h3>Jugador: <strong>{{ game.player.name }}</strong>, Fecha: {{ game.created|date:"m-d-Y h:i:s" }}</h3>
+<div id="content-main">
+	{% block object-tools %}
+		<ul class="object-tools">
+			{% block other_logs %}{% endblock %}
+		</ul>
+	{% endblock %}
+	<table width="100%">
+		<thead>
+			<tr>
+				<th>Milisegundo</th>
+				<th>Evento</th>
+				<th width="99%">Datos</th>
+			</tr>
+		</thead>
+		{% for entry in log %}
+			<tr class="{% cycle row1,row2 %}">
+				<td>{{ entry.time }}</td>
+				<td>{{ entry.type }}</td>
+				<td><pre>{{ entry.pretty_data }}</pre></td>
+			</tr>
+		{% endfor %}
+	</table>
+</div>
+{% endblock %}

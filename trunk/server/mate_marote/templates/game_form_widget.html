@@ -1,0 +1,6 @@
+<div class="field">{{ form.light }}<label for="{{ form.light.auto_id }}">Version Light</label></div>
+{% if debug %}
+	<div class="field"><label for="{{ form.gamefile.auto_id }}">Archivo de juego:</label>{{ form.gamefile }}</div>
+	<div class="field">{{ form.debug }}<label for="{{ form.debug.auto_id }}">Mostrar Debug</label></div>
+{% endif %}
+<input type="submit" value="Jugar" class="button"/>
