@@ -6,6 +6,7 @@ package memory
 	
 	import utils.SerializableEvent;
 	import com.adobe.serialization.json.JSON;
+	import utils.Random;
 
 	
 	public class Level extends EventDispatcher{
@@ -145,7 +146,7 @@ package memory
 			}
 		}
 		public function shuffle():void{
-			Utils.dirtyRandom(grid)
+			Random.dirtyRandom(grid)
 			for(var i:String in pictures){
 				var pic:Picture = pictures[i]
 				pic.reset()

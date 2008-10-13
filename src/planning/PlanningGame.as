@@ -35,7 +35,7 @@ package planning{
 
 		public function PlanningGame(){
 			super()
-			version_number = 'v0.9.8'
+			version_number = 'v1.0'
 			gameName = 'planning'
 		}
 		
@@ -187,12 +187,16 @@ package planning{
         	super.createDebugControls()
         	var rot:Label = new Label()
 			rot.text = 'Rot:'
+			rotacionLbl.width = 10
 			var minm:Label = new Label()
         	minm.text = 'Min:'
+        	minMovesLbl.width = 10
         	var maxm:Label = new Label()
         	maxm.text = 'Max:'
+        	maxMovesLbl.width = 10
         	var movc:Label = new Label()
-        	movc.text = 'Movs:'
+        	movc.text = 'Mov:'
+        	moveCountLbl.width = 10
 			with(controls){
 				addChild(rot)
 				addChild(rotacionLbl)
