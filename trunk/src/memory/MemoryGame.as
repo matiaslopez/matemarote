@@ -49,7 +49,7 @@
 		
 		public function MemoryGame():void{
 			super()
-			version_number = 'v0.9.1'
+			version_number = 'v1.0'
 			gameName = 'memory'
 		}
 		override public function init(e:Event):void{

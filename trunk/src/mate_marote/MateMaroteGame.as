@@ -175,19 +175,19 @@ package mate_marote
 					function(e:Event):void{ loadTrial(gameLoader.harderThan(dificulty)) })
 	
 			var current:Label = new Label()
-			current.text = "Current Level:"
+			current.text = "Lvl:"
 									
 			var trial:Label = new Label()
-			trial.text = 'Trial count:'
+			trial.text = 'Tr.count:'
 			
 			var trialid:Label = new Label()
-			trialid.text = 'Trialid:'
+			trialid.text = 'Tr.id:'
 			
 			var wins:Label = new Label()
-			wins.text = 'Wins:'
+			wins.text = 'Win:'
 				
 			var losses:Label = new Label()
-			losses.text = 'Losses:'
+			losses.text = 'Loss:'
 			
 			with(controls){
 				addChild(version)
