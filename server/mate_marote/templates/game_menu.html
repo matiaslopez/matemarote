@@ -85,5 +85,21 @@
 		</form>
 	</div>
 	
+	<div class="juego">
+        <h2>Regalos</h2>
+        <p>Atrap&aacute; todos los regalos!!</p>
+        <form action="{% url dummygame "habilidad-cogeregalos" %}" method="get">
+            <input type="submit" value="Jugar" class="button"/>
+        </form>
+    </div>
+    
+    <div class="juego">
+        <h2>Explotar Globos</h2>
+        <p>Explot&aacute; la mayor cantidad de globos antes de quedarte sin tiempo.</p>
+        <form action="{% url dummygame "ballonsshot" %}" method="get">
+            <input type="submit" value="Jugar" class="button"/>
+        </form>
+    </div>
+	
 </body>
 </html>

@@ -25,7 +25,7 @@ def moves(orig, dest):
     g1, p1 = position(orig)
     g2, p2 = position(dest)
 
-    if p1 == p2 and p1 % 2:
+    if p1 == p2 and g1 != g2 and p1 % 2:
         return 3, 1 # special case, no bridge and the same location means 3 jumps
 
     half_ring = len(g1)/2
@@ -41,7 +41,7 @@ def moves(orig, dest):
     return dist, rot
 
 
-def create_game_file(starting_level, wins, losses, trial_count):
+def create_game_file(starting_level, losses, wins, trial_count):
     def chars(val): #position string as a house position list
         return [int(val[i]) for i in (0,1,3,2)] 
     
@@ -61,12 +61,12 @@ def create_game_file(starting_level, wins, losses, trial_count):
                 #trials.append([i, max_moves, level, rot] + houses(x) + chars(y))
                 trials.append([level, max_moves, level, rot] + houses(x) + chars(y))
 
-    return str( [starting_level, wins, losses, trial_count, trials] )
+    return str( [starting_level, losses, wins, trial_count, trials] )
     
 if __name__ == "__main__":
     import sys
     if len(sys.argv) != 6:
-        print 'Usage: %s <GAME_FILE_NAME> <STARTING_LEVEL> <WINS> <LOSSES> <TRIAL_COUNT>' % sys.argv[0]
+        print 'Usage: %s <GAME_FILE_NAME> <STARTING_LEVEL> <LOSSES> <WINS> <TRIAL_COUNT>' % sys.argv[0]
         sys.exit()
     
     game = create_game_file(*[int(x) for x in sys.argv[2:]])
