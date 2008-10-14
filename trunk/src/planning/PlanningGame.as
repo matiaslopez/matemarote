@@ -186,17 +186,17 @@ package planning{
         override public function createDebugControls():void{
         	super.createDebugControls()
         	var rot:Label = new Label()
-			rot.text = 'Rot:'
+			rot.text = 'Rot'
 			rotacionLbl.width = 10
 			var minm:Label = new Label()
-        	minm.text = 'Min:'
+        	minm.text = 'Min'
         	minMovesLbl.width = 10
         	var maxm:Label = new Label()
-        	maxm.text = 'Max:'
-        	maxMovesLbl.width = 10
+        	maxm.text = 'Max'
+        	maxMovesLbl.width = 20
         	var movc:Label = new Label()
-        	movc.text = 'Mov:'
-        	moveCountLbl.width = 10
+        	movc.text = 'Mov'
+        	moveCountLbl.width = 20
 			with(controls){
 				addChild(rot)
 				addChild(rotacionLbl)
