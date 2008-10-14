@@ -26,7 +26,7 @@ def moves(orig, dest):
     g2, p2 = position(dest)
 
     if p1 == p2 and g1 != g2 and p1 % 2:
-        return 3, 1 # special case, no bridge and the same location means 3 jumps
+        return 3, 0 # special case, different ring, no bridge and the same location means 3 jumps
 
     half_ring = len(g1)/2
     raw_dist = abs(p1-p2)
@@ -35,7 +35,7 @@ def moves(orig, dest):
     if g1 == g2:
         rot = 1
     else:
-	rot = 0
+        rot = 0
         dist += 1 # add one more move for permutation
 
     return dist, rot
