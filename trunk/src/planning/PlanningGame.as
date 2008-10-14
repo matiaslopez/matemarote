@@ -35,7 +35,7 @@ package planning{
 
 		public function PlanningGame(){
 			super()
-			version_number = 'v1.0'
+			version_number = 'v1.1'
 			gameName = 'planning'
 		}
 		
@@ -85,7 +85,6 @@ package planning{
 		}
 		override public function startGame():void{
 			super.startGame()
-			moveCount = 0
 		}
 		
 		override public function resetGame():void{
@@ -97,6 +96,13 @@ package planning{
 			//Uses a TRIAL list to set house and character layout
 			//                           houses   chars
 			//TRIAL = [nivel, min_moves, max_moves, rotacion, 1,2,3,4, 0,0,0,0]
+			for each(var h:PlanningHouse in houses){
+				h.character = null
+			}
+			for each(var c:PlanningCharacter in characters){
+				c.house = null
+			}
+			
 			for(var i:int=0; i<positions.length; i++){
 				//the index of house_id in TRIAL is 4 more than i
 				//the house_id in TRIAL is 1 more than the index in this.houses
@@ -118,6 +124,7 @@ package planning{
 			maxMovesLbl.text = trial['trial'][1]
 			minMovesLbl.text = trial['trial'][2]
 			rotacionLbl.text = trial['trial'][3]
+			moveCount = 0
 		}
 		
         
@@ -131,8 +138,6 @@ package planning{
         }
         
         public function endTrial(won:Boolean, videourl:String, msg:String):void{
-    		moveCount = 0
-    		moveCountLbl.text = String(moveCount)
     		var after:Function = function():void{ nextTrial(won) }
     		var self:PlanningGame = this
         	if(noMedia){
@@ -297,7 +302,7 @@ class PlanningHouse extends UIComponent{
 	
 	public function setCharacter(char:PlanningCharacter):void{
 		if(char.house){
-			char.house.character = null
+			char.house.character = null //borro el char de la casa anterior
 		}
 		character = char
 		char.house = this
@@ -305,13 +310,6 @@ class PlanningHouse extends UIComponent{
 		//Find out why char has no dimensions but its image does...(nasty flash bug?)
 		char.y = dropY - char.image.height
 		char.x = dropX - char.image.width/2
-	}
-	
-	public function clearCharacter():void{
-		if(character){
-			removeChild(character)
-			character = null
-		}
 	}
 	
 	public function setPosition(newPos:HousePosition):void{

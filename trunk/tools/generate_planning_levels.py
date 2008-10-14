@@ -50,16 +50,12 @@ def create_game_file(starting_level, losses, wins, trial_count):
     
     all = outer + inner
     trials = []
-    #i = 0
     for x in all:
         for y in all:
             if x == y: continue
             level,rot = moves(x,y)
             if level > 1:
-                max_moves = 8 if level <= 4 else level*2
-                #i += 1
-                #trials.append([i, max_moves, level, rot] + houses(x) + chars(y))
-                trials.append([level, max_moves, level, rot] + houses(x) + chars(y))
+                trials.append([level, 30, level, rot] + houses(x) + chars(y))
 
     return str( [starting_level, losses, wins, trial_count, trials] )
     
