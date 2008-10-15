@@ -35,7 +35,7 @@ package planning{
 
 		public function PlanningGame(){
 			super()
-			version_number = 'v1.1'
+			version_number = 'v1.1.1'
 			gameName = 'planning'
 		}
 		
@@ -251,11 +251,13 @@ class PlanningCharacter extends UIComponent{
 	}
 	
 	private function onDrag(event:MouseEvent):void {
-        dispatchEvent(new SerializableEvent(START_DRAG, {character:nick, house:house.nick}))
-        var ds:DragSource = new DragSource();
-        ds.addData(this, 'character');
-        DragManager.doDrag(this, ds, event, dragHelper);
-        visible = false
+		if(!DragManager.isDragging){
+	        dispatchEvent(new SerializableEvent(START_DRAG, {character:nick, house:house.nick}))
+	        var ds:DragSource = new DragSource();
+	        ds.addData(this, 'character');
+	        DragManager.doDrag(this, ds, event, dragHelper);
+	        visible = false
+		}
     }
     
     private function onDragComplete(event:DragEvent):void{
