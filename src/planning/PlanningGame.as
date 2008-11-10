@@ -117,8 +117,9 @@ package planning{
 				}
 			}
 		}
-		override public function loadTrial(trial:Object):void{
-			super.loadTrial(trial)
+		
+		override public function startTrial(trial:Object):void{
+			super.startTrial(trial)
 			setLayout(trial['trial'])
 			maxMoves = trial['trial'][1] as int
 			maxMovesLbl.text = trial['trial'][1]
@@ -127,7 +128,6 @@ package planning{
 			moveCount = 0
 		}
 		
-        
         public function checkWin():Boolean{
         	for each(var h:PlanningHouse in ownedHouses){
   				if( !h.isDone() ){

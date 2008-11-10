@@ -2,6 +2,7 @@ package mate_marote
 {
 	import flash.events.Event;
 	import flash.events.MouseEvent;
+	import flash.events.KeyboardEvent;
 	import flash.errors.IOError;
     import flash.events.IOErrorEvent;
 	import flash.media.Sound;
@@ -13,6 +14,9 @@ package mate_marote
 	import flash.net.NetConnection;
 	import flash.media.Video;
 	import flash.utils.setTimeout;
+	import flash.ui.Keyboard;
+	import flash.utils.clearInterval;
+	import flash.utils.setInterval;
 	
 	import mx.containers.HBox;
 	import mx.containers.TitleWindow;
@@ -24,6 +28,7 @@ package mate_marote
 	import mx.core.UIComponent;
 	import mx.events.FlexEvent;
 	import mx.managers.PopUpManager;
+	import mx.managers.IFocusManagerComponent;
 	
 	import utils.GameLogger;
 	import utils.GameServer;
@@ -32,7 +37,7 @@ package mate_marote
 	import utils.GameLoader;
 	import utils.MessageManager;
 
-	public class MateMaroteGame extends Application{
+	public class MateMaroteGame extends Application implements IFocusManagerComponent{
 		public static const GAME_STARTED:String = "GAME_STARTED"
 		public static const GAME_FINISHED:String = "GAME_FINISHED"
 		public static const GAME_TYPE:String = "MATE_MAROTE_GAME"
@@ -230,8 +235,21 @@ package mate_marote
         
         
         public function loadTrial(trial:Object):void{
+			var msg:TitleWindow = MessageManager.show(this, 'Preparados... En sus marcas... Listos...', 0)
+			function do_start(e:KeyboardEvent):void{
+				if(e.keyCode == Keyboard.SPACE){
+					clearInterval(i)
+					removeEventListener(KeyboardEvent.KEY_DOWN, do_start)
+					MessageManager.remove(msg)
+					startTrial(trial)
+				}
+			}
+        	var i:int = setInterval(setFocus, 100)
+			addEventListener(KeyboardEvent.KEY_DOWN, do_start)
+        }
+        
+        public function startTrial(trial:Object):void{
         	trialCount++
-    		
         	if(trial['trial'][0] as int != dificulty ){
         		dificulty = trial['trial'][0] as int
 	        	GameServer.call(setLevelUrl, null, null, {level:dificulty})

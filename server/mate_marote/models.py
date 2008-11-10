@@ -94,6 +94,7 @@ class MemoryGame(Game):
         game_log = []
         game_data = None
         storing_moves = False
+        last_mouse_record = None
         for entry in self.log_entries.order_by('order'):
             if entry.type == 'GAME_STARTED':
                 game_data = entry.value
@@ -101,28 +102,39 @@ class MemoryGame(Game):
                 
             if entry.type == 'TRIAL_STARTED':
                 trial = game_data[4][entry.value]
-                response = [None, []]
+                response = [None, None]
                 game_log.append([trial, response])
                 
             if entry.type == 'PICTURES_SHOWN':
                 pictures_shown_time = entry.time
-                choice = [None, None, [], entry.value]
+                choice = [None, None, None, entry.value]
                 response[1].append(choice)
                 storing_moves = True
                 
-            if entry.type == 'mouseMove' and storing_moves:
-                v = entry.value
-                choice[2].append([v['stage_x'], v['stage_y'], entry.time-pictures_shown_time ])
+            if entry.type == 'mouseMove':
+                last_mouse_record = entry
+                if storing_moves:
+                    last_mouse_record = entry
+                    v = entry.value
+                    choice[2] = choice[2] or [] #initialize trajectory
+                    choice[2].append(self.mousemove(entry,pictures_shown_time))
                 
             if entry.type == 'PICTURE_SELECTED':
                 choice[0] = entry.value['picId']
                 choice[1] = [entry.value['stage_x'], entry.value['stage_y']]
+                if not choice[2]: #Put something in trajectory if empty
+                    choice[2] = [self.mousemove(e,pictures_shown_time)
+                                      for e in (last_mouse_record, entry)]
                 storing_moves = False
                 
             if entry.type == 'LEVEL_FINISH':
                 response[0] = int(entry.value['won'])
             
         return game_log
+    
+    def mousemove(self, entry, start_time):
+        v = entry.value
+        return [v['stage_x'], v['stage_y'], entry.time-start_time]
     
 class PlanningGame(Game):
     VIEW_LOG_URL = 'planning_log'
@@ -135,7 +147,7 @@ class PlanningGame(Game):
         # log format:
         # LOG_FILE = [TRIAL_RESPONSE, TRIAL_RESPONSE, ...]
         # TRIAL_RESPONSE = [TRIAL, RESPONSE]
-        # RESPONSE = [correct, move_count, [CHAR_DRAG, CHAR_DRAG, ...]]
+        # RESPONSE = [correct, move_count, [CHAR_DRAG, CHAR_DRAG, ...], [WANDERING_MOUSE_MOVE, ...]]
         # CHAR_DRAG = [char_id, from, to, starttime, endtime,[MOUSE_MOVE, MOUSE_MOVE, ...]]
         # MOUSE_MOVE = [x,y,time]
         
@@ -151,21 +163,24 @@ class PlanningGame(Game):
                 
             if entry.type == 'TRIAL_STARTED':
                 trial = game_data[4][entry.value]
-                response = [None, 0, [], []]
+                response = [None, 0, None, None]
                 game_log.append( [trial, response] )
                 
             if entry.type == 'PLANNING_CHARACTER_START_DRAG':
                 dragging = True
                 v = entry.value
-                char_drag = [v['character'], v['house'], v['house'], entry.time-start_time, None, []]
+                char_drag = [v['character'], v['house'], v['house'], entry.time-start_time, None, None]
+                response[2] = response[2] or []
                 response[2].append(char_drag)
                 
             if entry.type == 'mouseMove':
                 v = entry.value
                 m = [v['stage_x'], v['stage_y'], entry.time-start_time ] 
                 if dragging:
+                    char_drag[5] = char_drag[5] or []
                     char_drag[5].append(m)
                 else:
+                    response[3] = response[3] or []
                     response[3].append(m)
             
             if entry.type == 'PLANNING_CHARACTER_MOVED':
