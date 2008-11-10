@@ -114,10 +114,14 @@
 		}
 		
 		override public function loadTrial(trial:Object):void{
-			super.loadTrial(trial)
 			if(currentLevel){
 				currentLevel.unloadLevel()
 			}
+			super.loadTrial(trial)
+		}
+		
+		override public function startTrial(trial:Object):void{
+			super.startTrial(trial)
 			currentLevel = new Level(this, trial);
 			with(currentLevel){
 				addEventListener(Level.FINISH, onFinish);

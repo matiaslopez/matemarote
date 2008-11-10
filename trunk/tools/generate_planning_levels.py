@@ -41,7 +41,7 @@ def moves(orig, dest):
     return dist, rot
 
 
-def create_game_file(starting_level, losses, wins, trial_count):
+def make_trials():
     def chars(val): #position string as a house position list
         return [int(val[i]) for i in (0,1,3,2)] 
     
@@ -55,9 +55,13 @@ def create_game_file(starting_level, losses, wins, trial_count):
             if x == y: continue
             level,rot = moves(x,y)
             if level > 1:
-                trials.append([level, 30, level, rot] + houses(x) + chars(y))
+                trials.append([level, level, level, rot] + houses(x) + chars(y))
+    return trials
 
-    return str( [starting_level, losses, wins, trial_count, trials] )
+def create_game_file(starting_level, losses, wins, trial_count):
+    trials = make_trials()
+    crazy_trials = [ [8]+t[1:] for t in trials[:] ]
+    return str( [starting_level, losses, wins, trial_count, trials+crazy_trials] )
     
 if __name__ == "__main__":
     import sys
