@@ -49,7 +49,7 @@
 		
 		public function MemoryGame():void{
 			super()
-			version_number = 'v1.0'
+			version_number = 'v1.2'
 			gameName = 'memory'
 		}
 		override public function init(e:Event):void{
@@ -67,8 +67,8 @@
 		}
         
         override public function multimediaSetup():void{
-			gameMusicUrl = '/audio/memory/game_music.mp3'
-			menuMusicUrl = '/audio/memory/menu_music.mp3'			
+			gameMusicUrl = 'audio/memory/game_music.mp3'
+			menuMusicUrl = 'audio/memory/menu_music.mp3'			
 			super.multimediaSetup()
 		}
         

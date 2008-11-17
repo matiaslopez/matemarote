@@ -79,7 +79,78 @@ class MemoryGame(Game):
     
     def __unicode__(self):
         return u'Juego de Memoria %s' % self.id
+    
+    def as_matlab(self):
+        from numpy import dtype,uint,array,ndarray,double
+        from math import pi
+        list2Arr = lambda x: array(tuple(x))
+        none2PI = lambda x: x == None and pi or bool(x)
 
+        TRIAL_TYPE = dtype([('nivel',uint),
+                            ('agrup',uint),
+                            ('nfichas',uint),
+                            ('fichas',ndarray),])
+                            #aca adentro falta DATA
+        TRAYECTORIA = dtype([('trayectoria', ndarray)])
+        RESPONSE_TYPE = dtype([('correct',uint),
+                               ('nchoices',uint),
+                               ('nficha',ndarray),
+                               ('RTS',ndarray),
+                               ('trayectoria',TRAYECTORIA),
+                               ('posicionfichas',ndarray),])
+        trials = []
+        responses = []
+        for t,r in self.parse_log():
+            trials.append(array((t[0], t[1], len(t[2]), list2Arr(t[2])), dtype=TRIAL_TYPE))
+            
+            nfichas = []
+            trayectorias = []
+            response_times = []
+            posiciones = []
+            for choice in r[1]:
+                nfichas.append(none2PI(choice[0]))
+                trayectorias.append(array((choice[2],), dtype=TRAYECTORIA))
+                p = [choice[3]]
+                posiciones.append(p)
+                response_times.append(choice[2][-1][-1])#time is last item in last mouse record
+            
+            responses.append(array(( none2PI(r[0]),
+                                     len(r[1]),
+                                     list2Arr(nfichas),
+                                     list2Arr(response_times),
+                                     list2Arr(trayectorias),
+                                     list2Arr(posiciones))))
+        return array(trials), array(responses)
+
+#function [TRIALS RESPONSE] = parse_log_memory(DATA);
+#
+#for i=1:length(DATA{1})
+#   TRIALS{i}.data=DATA{1}{i};
+#   TRIALS{i}.nivel=cell2mat(DATA{1}{i}{1}(1));
+#   TRIALS{i}.agrup=cell2mat(DATA{1}{i}{1}(2));
+#   TRIALS{i}.nfichas=length(DATA{1}{i}{1}{3});
+#   TRIALS{i}.fichas=[];
+#   for nf=1:TRIALS{i}.nfichas
+#       TRIALS{i}.fichas=[TRIALS{i}.fichas;cell2mat(DATA{1}{i}{1}{3}{nf})];
+#   end
+#
+#   RESPONSE{i}.correct=DATA{1}{i}{2}{1};
+#   RESPONSE{i}.nchoices=length(DATA{1}{i}{2}{2});
+#   RESPONSE{i}.nficha=[];
+#   RESPONSE{i}.RTS=[];
+#   for nc=1:RESPONSE{i}.nchoices       
+#       RESPONSE{i}.trayectoria{nc}=[];
+#       RESPONSE{i}.nficha=[RESPONSE{i}.nficha,DATA{1}{i}{2}{2}{nc}{1}];
+#       for nsamp=1:length(DATA{1}{i}{2}{2}{nc}{3});
+#           RESPONSE{i}.trayectoria{nc}=[RESPONSE{i}.trayectoria{nc}; cell2mat(DATA{1}{i}{2}{2}{nc}{3}{nsamp})]
+#       end
+#       RESPONSE{i}.posicionfichas{nc}=[];
+#       for nf=1:length(DATA{1}{i}{2}{2}{nc}{4})
+#           RESPONSE{i}.posicionfichas{nc}=[RESPONSE{i}.posicionfichas{nc};cell2mat(DATA{1}{i}{2}{2}{nc}{4}{nf})];
+#       end
+#        RESPONSE{i}.RTS=[RESPONSE{i}.RTS,RESPONSE{i}.trayectoria{nc}(end,3)];
+#   end
+#end
     def parse_log(self):
         '''
         Log Format :
@@ -102,7 +173,7 @@ class MemoryGame(Game):
                 
             if entry.type == 'TRIAL_STARTED':
                 trial = game_data[4][entry.value]
-                response = [None, None]
+                response = [None, []]
                 game_log.append([trial, response])
                 
             if entry.type == 'PICTURES_SHOWN':

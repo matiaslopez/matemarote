@@ -37,7 +37,7 @@ package mate_marote
 	import utils.GameLoader;
 	import utils.MessageManager;
 
-	public class MateMaroteGame extends Application implements IFocusManagerComponent{
+	public class MateMaroteGame extends Application{
 		public static const GAME_STARTED:String = "GAME_STARTED"
 		public static const GAME_FINISHED:String = "GAME_FINISHED"
 		public static const GAME_TYPE:String = "MATE_MAROTE_GAME"
@@ -70,6 +70,8 @@ package mate_marote
         public var winsLbl:Label = new Label()
         public var lossesLbl:Label = new Label()
         public var trialCountLbl:Label = new Label()
+        
+        public var startDummyButton:Button = new Button()
 
 		public function MateMaroteGame(){
 			addChildAt(background, 0)
@@ -109,10 +111,11 @@ package mate_marote
 		}
 		
 		public function multimediaSetup():void{
+			function ioError(e:Event):void{ trace('ioError'+e); }
 			gameMusic = new Sound(new URLRequest(mediaUrl+gameMusicUrl))
-            gameMusic.addEventListener(IOErrorEvent.IO_ERROR, function(e:Event):void{});
+            gameMusic.addEventListener(IOErrorEvent.IO_ERROR, ioError);
 			menuMusic = new Sound(new URLRequest(mediaUrl+menuMusicUrl))
-            menuMusic.addEventListener(IOErrorEvent.IO_ERROR, function(e:Event):void{});
+            menuMusic.addEventListener(IOErrorEvent.IO_ERROR, ioError);
 		}
 		
 		public function showWelcomeWindow():void {
@@ -163,6 +166,8 @@ package mate_marote
         }
 		
 		public function createControls():void{
+			startDummyButton.visible = false
+			addChild(startDummyButton)
 			addChild(controls)
 		}
         public function createDebugControls():void{
@@ -212,6 +217,7 @@ package mate_marote
         }
         
         public function playIntro():void{
+        	startDummyButton.setFocus()//Take focus from intro, solves nasty space bar bug
         	if(!noMedia){
         		menuMusicChannel.stop()
         	}
@@ -237,15 +243,15 @@ package mate_marote
         public function loadTrial(trial:Object):void{
 			var msg:TitleWindow = MessageManager.show(this, 'Preparados... En sus marcas... Listos...', 0)
 			function do_start(e:KeyboardEvent):void{
-				if(e.keyCode == Keyboard.SPACE){
+				if(e.keyCode == 65){//65 is A
 					clearInterval(i)
-					removeEventListener(KeyboardEvent.KEY_DOWN, do_start)
+					startDummyButton.removeEventListener(KeyboardEvent.KEY_DOWN, do_start)
 					MessageManager.remove(msg)
 					startTrial(trial)
 				}
 			}
-        	var i:int = setInterval(setFocus, 100)
-			addEventListener(KeyboardEvent.KEY_DOWN, do_start)
+        	var i:int = setInterval(startDummyButton.setFocus, 100)
+			startDummyButton.addEventListener(KeyboardEvent.KEY_DOWN, do_start)
         }
         
         public function startTrial(trial:Object):void{
@@ -296,6 +302,7 @@ package mate_marote
 	        		gameMusicChannel.stop()
 	        	}
         		menuMusicChannel = menuMusic.play(0, int.MAX_VALUE)
+        		trace('started music:')
         	}
         	showWelcomeWindow()
         }
