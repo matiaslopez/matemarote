@@ -11,7 +11,7 @@ MANAGERS = ADMINS = (
 DATABASE_ENGINE = 'mysql'
 DATABASE_NAME = 'mate_marote'
 DATABASE_USER = 'mate_marote'
-DATABASE_PASSWORD = 'martemartote'
+DATABASE_PASSWORD = 'martote'
 DATABASE_HOST = ''
 DATABASE_PORT = ''
 

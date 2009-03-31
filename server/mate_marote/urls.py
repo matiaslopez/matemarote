@@ -26,6 +26,9 @@ urlpatterns = patterns('',
     url(r'^save_planning_game/$', save_game , {'game_class': PlanningGame }),
     url(r'^set_planning_level/$', set_starting_level, {'level_attr': 'starting_planning_level' }),
     
+    #Stroop
+    url(r'^control/$', show_control, name='control'),
+    
     #Admin
     url(r'^admin/(.*)', admin.site.root),
     url(r'^adm/memory_log/(?P<game_id>.*)/$', memory_log, name='memory_log'),
