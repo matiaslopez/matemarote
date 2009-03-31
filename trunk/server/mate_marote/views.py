@@ -123,3 +123,6 @@ def parsed_log(request, game_id, game_class):
 def dummygame(request, swf):
     return render_to_response('dummygame.html', {'swf_name': settings.MEDIA_URL+swf})
 
+def show_control(request):
+    return render_to_response('control.html')
+    

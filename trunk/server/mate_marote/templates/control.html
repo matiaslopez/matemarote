@@ -1,0 +1,83 @@
+<html>
+<head>
+<title>Stroop</title>
+<script type="text/javascript" src="/static/js/jquery-1.3.2.min.js"></script>
+<script type="text/javascript">
+	$(function(){
+		var posicion,
+			orientacion, //0 es derecha y 1 es izquierda
+			$juez = $('div#juez'),
+			$flecha = $('div#flecha'),
+			LEFT_KEY = 32,
+			RIGHT_KEY = 13;
+		
+		function presentar_flecha(){
+			$flecha.hide();
+			posicion = Math.floor(Math.random()*915);
+			orientacion = Math.floor(Math.random()*2);
+			setTimeout(function(){
+				$('img', $flecha).attr({src:"/static/images/flecha"+ orientacion +".png"});
+				$flecha.css("left", posicion).show();
+				set_juez('gray');
+			}, 500);
+		}
+	
+		function set_juez(color){
+			$juez.css("background-color", color);
+		}
+		
+		$(document).keypress(function(e){
+			console.log('clicked:', e);
+			if(e.which != LEFT_KEY && e.which != RIGHT_KEY){
+				return; //Lo dejamos errarle a la tecla tranquilo.
+			}
+			
+			if((e.which == LEFT_KEY && orientacion == 1) ||
+			   (e.which == RIGHT_KEY && orientacion == 0)){
+				set_juez('green');
+			}else{
+				set_juez('red');
+			}
+			presentar_flecha();
+		});
+		
+		$flecha.append('<img src="#">');
+		presentar_flecha();
+	});
+</script>
+
+<style type="text/css">
+body { 
+	margin: 0px;
+	overflow:hidden;
+	background: #3D3D3D;
+	font-family: Helvetica;
+}
+
+div#flecha {
+	background-color: transparent;
+	text-align: center;
+	color: #FF0;
+	font-size: 50;
+	height: 75;
+	width: 100;
+	position: absolute;
+	top: 200;
+	left: 100;
+}
+
+div#juez {
+	width: 100;
+	height: 100;
+	position: absolute;
+	left: 450;
+}
+
+</style>
+</head>
+<body>
+<div id="juez"></div>
+<div id="flecha"></div>
+</body>
+</html>
+
