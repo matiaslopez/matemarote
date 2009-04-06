@@ -1,7 +1,7 @@
 from django.conf.urls.defaults import *
 from django.conf import settings
 from views import *
-from models import PlanningGame, MemoryGame
+from models import PlanningGame, MemoryGame, StroopGame
 from django.contrib import admin
 
 admin.autodiscover()
@@ -28,6 +28,8 @@ urlpatterns = patterns('',
     
     #Stroop
     url(r'^control/$', show_control, name='control'),
+    url(r'^create_stroop_game/$', create_game , {'game_class': StroopGame }, name="create_stroop_game"),
+    url(r'^save_stroop_game/$', save_game , {'game_class': StroopGame }, name="save_stroop_game"),
     
     #Admin
     url(r'^admin/(.*)', admin.site.root),
@@ -38,6 +40,10 @@ urlpatterns = patterns('',
     url(r'^adm/planning_log/(?P<game_id>.*)/$', planning_log, name='planning_log'),
     url(r'^adm/full_planning_log/(?P<game_id>.*)/$', full_planning_log, name='full_planning_log'),
     url(r'^adm/parsed_planning_log/(?P<game_id>.*)/$', parsed_log, {'game_class': PlanningGame }, name='parsed_planning_log'),
+
+    url(r'^adm/stroop_log/(?P<game_id>.*)/$', stroop_log, name='stroop_log'),
+    url(r'^adm/full_stroop_log/(?P<game_id>.*)/$', full_stroop_log, name='full_stroop_log'),
+    url(r'^adm/parsed_stroop_log/(?P<game_id>.*)/$', parsed_log, {'game_class': StroopGame }, name='parsed_stroop_log'),
     
     #Static
     url(r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root':settings.MEDIA_ROOT}),

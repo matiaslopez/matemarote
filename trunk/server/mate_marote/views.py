@@ -110,11 +110,17 @@ def memory_log(request, game_id):
 def planning_log(request, game_id):
     return _game_log(request, game_id, PlanningGame, 'logs/planning.html', True)
 
+def stroop_log(request, game_id):
+    return _game_log(request, game_id, StroopGame, 'logs/stroop.html', True)
+
 def full_memory_log(request, game_id):
     return _game_log(request, game_id, MemoryGame, 'logs/full_memory.html', False)
 
 def full_planning_log(request, game_id):
     return _game_log(request, game_id, PlanningGame, 'logs/full_planning.html', False)
+
+def full_stroop_log(request, game_id):
+    return _game_log(request, game_id, StroopGame, 'logs/full_stroop.html', False)
 
 def parsed_log(request, game_id, game_class):
     game = get_object_or_404(game_class, id=game_id)
