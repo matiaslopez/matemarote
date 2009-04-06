@@ -265,3 +265,12 @@ class PlanningGame(Game):
             if entry.type == 'TRIAL_ENDED':
                 response[0] = int(entry.value['won'])
         return game_log
+
+class StroopGame(Game):
+    VIEW_LOG_URL = 'stroop_log'
+    DOWNLOAD_LOG_URL = 'parsed_stroop_log'
+    
+    def parse_log(self):
+        return []
+    def __unicode__(self):
+        return u'Juego de Stroop %s' % self.id
