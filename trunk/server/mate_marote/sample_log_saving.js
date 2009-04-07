@@ -13,4 +13,4 @@ $.ajax({url:'/create_stroop_game/', async:false, dataType:'json',
 log = '{"type":"eventoDummy", "time": 10000, "data": {"arg1":"un arg", "arg2":"otro argumento"}, "order": 1}\n'+
       '{"type":"eventoDummy", "time": 20100, "data": {"otra_cosa":"otro arg"}, "order": 2}\n'
 
-$.ajax({url:'/save_stroop_game/', data:{'game_id':id_juego, 'log': log}, method:'POST', dataType:'json'})
+$.ajax({url:'/save_stroop_game/', data:{'game_id':id_juego, 'log': log}, type:'POST', dataType:'json'})
