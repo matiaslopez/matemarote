@@ -2,47 +2,195 @@
 <head>
 <title>Stroop</title>
 <script type="text/javascript" src="/static/js/jquery-1.3.2.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery.svg.package-1.3.2/jquery.svganim.js"></script>
+<script type="text/javascript" src="/static/js/jquery.svg.package-1.3.2/jquery.svg.js"></script>
 <script type="text/javascript">
 	$(function(){
 		var posicion,
 			orientacion, //0 es derecha y 1 es izquierda
 			$juez = $('div#juez'),
 			$flecha = $('div#flecha'),
+			$mensaje = $('div#mensaje'),
+			$puntaje = $("div#puntaje"),
+			nivel = 0,
+			tipo_flecha = '',
+			tiempo_trial = 5000,
 			LEFT_KEY = 32,
-			RIGHT_KEY = 13;
+			RIGHT_KEY = 13,
+			IZQUIERDA = 1,
+			DERECHA = 0,
+			CORRECTAS_OBJETIVO = 15,
+			correctas = 0,
+			INCORRECTAS_MAX = 3,
+			incorrectas = 0,
+			NO_CLICK=0,
+			reloj,
+			reloj_entretiempo,
+			iteracion_reloj=0,
+			nro_evento=0,
+			registro='',
+			tiempo_actual = new Date(),
+			STOP = 0;
+
+			//Seleccionar al player 1
+			$.ajax({url:'/select_player/', async:false, data:{'player_id':1}, type:'POST', dataType:'json'});
+
+			var id_juego;
+			//Crear un juego nuevo, nos guardamos el id
+			$.ajax({url:'/create_stroop_game/', async:false, dataType:'json',
+		        success:function(x){
+			            id_juego = x.game_id;
+		        }})
+
+		$("select").change(function(){ // Fijar el nivel con el DropDown box
+			nivel = $("#niveles option:selected").val();
+			tiempo_trial = $("#tiempos option:selected").val();
+			tiempo_actual = new Date()
+			registro = registro + '{"type":"cambioNivel", "time": "'+ tiempo_actual.getTime() +'" , "data": {"NIVEL":"'+nivel+'","TIEMPO_TRIAL":"'+tiempo_trial+'"}, "order": '+nro_evento+'}\n'
+			nro_evento++;
+			$('p',$mensaje).text("Recomenzando...");
+			$mensaje.show();
+			if (NO_CLICK == 0){
+				console.log("Reseteo el reloj");
+				clearInterval(reloj);
+				aguja.setAttribute("transform","rotate(0,75,75)");
+			}else{
+				clearTimeout(reloj_entretiempo);
+			}
+			$("select").hide();
+			recomenzar();
+		});
+
 		
+
+		$('#reloj').svg();            
+		var svg = $('#reloj').svg('get');
+		svg.circle(75, 75, 70,{fill: 'none', stroke: 'red', 'stroke-width': 5});  // Usamos svg-jquery para dibujar
+		var aguja = svg.line(75,75,75,10,{stroke: 'red', 'stroke-width': 5,transform: 'rotate(0, 75, 75)'});
+		
+
 		function presentar_flecha(){
 			$flecha.hide();
-			posicion = Math.floor(Math.random()*915);
+			posicion = Math.floor(Math.random()*90);
 			orientacion = Math.floor(Math.random()*2);
+			
+			switch (nivel) {
+ 			   case "0":
+			       	IZQUIERDA = 1;
+				DERECHA = 0;
+				tipo_flecha = '';
+		       	   break
+                           case "1":
+				console.log("estoy en el 1");
+			       	IZQUIERDA = 0;
+				DERECHA = 1;
+				tipo_flecha = '_B_';
+       			   break
+    			   case "2":
+				if (Math.random() > 0.5){
+					IZQUIERDA = 1;
+					DERECHA = 0;
+					tipo_flecha = '';
+				}else{
+					IZQUIERDA = 0;
+					DERECHA = 1;
+					tipo_flecha = '_B_';
+				}
+			}
+
+			$('img', $flecha).attr({src:"/static/images/flecha"+ tipo_flecha +orientacion +".png"});
 			setTimeout(function(){
-				$('img', $flecha).attr({src:"/static/images/flecha"+ orientacion +".png"});
-				$flecha.css("left", posicion).show();
+				$flecha.css("left", posicion + "%" ).show();
+				tiempo_actual = new Date()
+				registro = registro + '{"type":"presentaFlecha", "time": "'+ tiempo_actual.getTime() +'" , "data": {"INVERTIDO":"'+DERECHA+'", "TIPO_FLECHA":"'+tipo_flecha+'","POS_FLECHA":"'+posicion+'","ORIENTACION_FLECHA":"'+orientacion+'","NIVEL":"'+nivel+'"}, "order": '+nro_evento+'}\n'
+				nro_evento++;
 				set_juez('gray');
+				NO_CLICK = 0;
+				iteracion_reloj=1;
+				reloj = setInterval(function(){
+					aguja.setAttribute("transform","rotate("+Math.round(iteracion_reloj*360/20)+",75,75)");
+					iteracion_reloj++;
+					if (iteracion_reloj>20){
+						$('p',$mensaje).text("Se te acabó el tiempo");
+						tiempo_actual = new Date()
+						registro = registro + '{"type":"timeOut", "time": "'+ tiempo_actual.getTime() +'" , "data": {"INVERTIDO":"'+DERECHA+'", "TIPO_FLECHA":"'+tipo_flecha+'","POS_FLECHA":"'+posicion+'","ORIENTACION_FLECHA":"'+orientacion+'","NIVEL":"'+nivel+'"}, "order": '+nro_evento+'}\n'
+						nro_evento++;
+						clearInterval(reloj);
+						NO_CLICK = 1;
+						$mensaje.show(500,recomenzar());
+					}
+				},Math.round(tiempo_trial/20));
+				console.log("Activado vale: "+reloj);
 			}, 500);
 		}
 	
+
 		function set_juez(color){
 			$juez.css("background-color", color);
 		}
-		
+
+		function recomenzar(){
+			if (STOP == 1){return;} // para debug
+			correctas = 0;
+			incorrectas = 0;
+			$.ajax({url:'/save_stroop_game/', data:{'game_id':id_juego, 'log': registro}, type:'POST', dataType:'json'})				
+			registro = '';
+			$puntaje.animate({width: "0%"},300);
+			reloj_entretiempo = setTimeout(function(){
+				$mensaje.hide();
+				presentar_flecha();
+				$("select").show();
+			},3000);
+		}
+
+		$juez.click(function(){
+			console.log("parado");
+			STOP =1;
+		});
+
 		$(document).keypress(function(e){
 			console.log('clicked:', e);
-			if(e.which != LEFT_KEY && e.which != RIGHT_KEY){
+			if((e.which != LEFT_KEY && e.which != RIGHT_KEY)||NO_CLICK==1){
 				return; //Lo dejamos errarle a la tecla tranquilo.
 			}
-			
-			if((e.which == LEFT_KEY && orientacion == 1) ||
-			   (e.which == RIGHT_KEY && orientacion == 0)){
+
+			NO_CLICK=1;
+			if((e.which == LEFT_KEY && orientacion == IZQUIERDA) ||
+			   (e.which == RIGHT_KEY && orientacion == DERECHA)){
+				correctas++;
+				tiempo_actual = new Date()
+				registro = registro + '{"type":"respuestaCorrecta", "time": "'+ tiempo_actual.getTime() +'" , "data": {"NRO_CORRECTAS":"'+correctas+'", "NRO_INCORRECTAS":"'+incorrectas+'"}, "order": '+nro_evento+'}\n'
+				nro_evento++;
+				clearInterval(reloj);
+				console.log("Desactivado vale: "+reloj);
+				$puntaje.animate({width: correctas/CORRECTAS_OBJETIVO*20+"%"},300);
+				aguja.setAttribute("transform","rotate(0,75,75)");
 				set_juez('green');
+				if(correctas >= CORRECTAS_OBJETIVO){
+					$('p',$mensaje).text("Groso, le ganaste a la flecha.");
+					$mensaje.show(500, recomenzar());
+					return;
+				}
 			}else{
+				incorrectas++;
+				tiempo_actual = new Date()
+				registro = registro + '{"type":"respuestaIncorrecta", "time": "'+ tiempo_actual.getTime() +'" , "data": {"NRO_CORRECTAS":"'+correctas+'", "NRO_INCORRECTAS":"'+incorrectas+'"}, "order": '+nro_evento+'}\n'
+				nro_evento++;
+				clearInterval(reloj);
+				aguja.setAttribute("transform","rotate(0,75,75)");
 				set_juez('red');
+				if(incorrectas >= INCORRECTAS_MAX){
+					$('p',$mensaje).text("Oops... le erraste a la direccion.");
+					$mensaje.show(500, recomenzar());
+					return;
+				}
 			}
 			presentar_flecha();
 		});
 		
 		$flecha.append('<img src="#">');
 		presentar_flecha();
+
 	});
 </script>
 
@@ -62,7 +210,7 @@ div#flecha {
 	height: 75;
 	width: 100;
 	position: absolute;
-	top: 200;
+	top: 50%;
 	left: 100;
 }
 
@@ -70,14 +218,84 @@ div#juez {
 	width: 100;
 	height: 100;
 	position: absolute;
-	left: 450;
+	left: 50%;
+	top: 10%;
+	margin-left: -50;
+}
+
+div#mensaje {
+	display: none;
+	width: 1000;
+	text-align: center;
+	color: orange;
+	font-size: 35;
+	height: 100;
+	position: absolute;
+	left: 50%;
+	top: 45%;
+	margin-left: -500;
+	margin-top: -50;
+
+}
+div#reloj{
+	position: absolute;
+	top: 5%;
+	left: 80%;
+	width: 150;
+	height: 150;
+
+}
+div#puntaje{
+	position: absolute;
+	top: 15%;
+	left: 0%;
+	width: 0%;
+	height: 5%;
+	background-color: red;
+	color:white;
+
+}
+div#puntaje_label{
+	position: absolute;
+	text-align:center;
+	top: 15%;
+	left: 0%;
+	width: 20%;
+	height: 5%;
+	background-color: red;
+	opacity: 0.3;
+	color:white;
+
 }
 
 </style>
 </head>
 <body>
+
+<select id="niveles">
+<option value="0" selected	>Primer nivel</option>
+<option value="1"		>Segundo nivel</option>
+<option value="2"		>Tercer nivel</option>
+</select>
+
+<select id="tiempos">
+<option value="200"			>0.2 s</option>
+<option value="500"			>0.5 s</option>
+<option value="1000"			>1 s</option>
+<option value="2000"			>2 s</option>
+<option value="3000"			>3 s</option>
+<option value="4000"			>4 s</option>
+<option value="5000" selected>5 s</option>
+
+</select>
+
+<div id="puntaje_label">Ganado</div>
+<div id="puntaje"></div>
 <div id="juez"></div>
 <div id="flecha"></div>
+<div id="mensaje"><p></p></div>
+<div id="reloj"></div>
 </body>
+
 </html>
 
