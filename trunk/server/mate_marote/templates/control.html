@@ -94,8 +94,7 @@
 			$('img', $flecha).attr({src:"/static/images/flecha"+ tipo_flecha +orientacion +".png"});
 			setTimeout(function(){
 				$flecha.css("left", posicion + "%" ).show();
-				logger.log("presentaFlecha", {"INVERTIDO":DERECHA, "TIPO_FLECHA":tipo_flecha,
-											  "POS_FLECHA":posicion, "ORIENTACION_FLECHA":orientacion,
+				logger.log("presentaFlecha", {"INVERTIDO":DERECHA, "POS_FLECHA":posicion, "ORIENTACION_FLECHA":orientacion,
 											  "NIVEL":nivel});
 				set_juez('gray');
 				NO_CLICK = 0;
