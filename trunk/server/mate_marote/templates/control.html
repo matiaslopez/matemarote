@@ -4,6 +4,8 @@
 <script type="text/javascript" src="/static/js/jquery-1.3.2.min.js"></script>
 <script type="text/javascript" src="/static/js/jquery.svg.package-1.3.2/jquery.svganim.js"></script>
 <script type="text/javascript" src="/static/js/jquery.svg.package-1.3.2/jquery.svg.js"></script>
+<script type="text/javascript" src="/static/js/JSON.js"></script>
+<script type="text/javascript" src="/static/js/logger.js"></script>
 <script type="text/javascript">
 	$(function(){
 		var posicion,
@@ -27,27 +29,21 @@
 			reloj,
 			reloj_entretiempo,
 			iteracion_reloj=0,
-			nro_evento=0,
-			registro='',
-			tiempo_actual = new Date(),
-			STOP = 0;
+			STOP = 0,
+			logger;
 
-			//Seleccionar al player 1
-			$.ajax({url:'/select_player/', async:false, data:{'player_id':1}, type:'POST', dataType:'json'});
-
-			var id_juego;
-			//Crear un juego nuevo, nos guardamos el id
-			$.ajax({url:'/create_stroop_game/', async:false, dataType:'json',
+		$.ajax({url:'{% url select_player %}', async:false, data:{'player_id':1}, type:'POST', dataType:'json'});
+		$.ajax({url:'{% url create_stroop_game %}', async:false, dataType:'json',
 		        success:function(x){
-			            id_juego = x.game_id;
-		        }})
+			 			logger = new Logger('{% url save_stroop_game %}', x.game_id);
+		        }});
+		    
 
 		$("select").change(function(){ // Fijar el nivel con el DropDown box
 			nivel = $("#niveles option:selected").val();
 			tiempo_trial = $("#tiempos option:selected").val();
-			tiempo_actual = new Date()
-			registro = registro + '{"type":"cambioNivel", "time": "'+ tiempo_actual.getTime() +'" , "data": {"NIVEL":"'+nivel+'","TIEMPO_TRIAL":"'+tiempo_trial+'"}, "order": '+nro_evento+'}\n'
-			nro_evento++;
+			logger.log('cambioNivel', {"NIVEL":nivel, "TIEMPO_TRIAL":tiempo_trial});
+			
 			$('p',$mensaje).text("Recomenzando...");
 			$mensaje.show();
 			if (NO_CLICK == 0){
@@ -61,13 +57,10 @@
 			recomenzar();
 		});
 
-		
-
 		$('#reloj').svg();            
 		var svg = $('#reloj').svg('get');
 		svg.circle(75, 75, 70,{fill: 'none', stroke: 'red', 'stroke-width': 5});  // Usamos svg-jquery para dibujar
-		var aguja = svg.line(75,75,75,10,{stroke: 'red', 'stroke-width': 5,transform: 'rotate(0, 75, 75)'});
-		
+		var aguja = svg.line(75,75,75,10,{stroke: 'red', 'stroke-width': 5,transform: 'rotate(0, 75, 75)'});		
 
 		function presentar_flecha(){
 			$flecha.hide();
@@ -77,33 +70,33 @@
 			switch (nivel) {
  			   case "0":
 			       	IZQUIERDA = 1;
-				DERECHA = 0;
-				tipo_flecha = '';
-		       	   break
-                           case "1":
-				console.log("estoy en el 1");
-			       	IZQUIERDA = 0;
-				DERECHA = 1;
-				tipo_flecha = '_B_';
-       			   break
-    			   case "2":
-				if (Math.random() > 0.5){
-					IZQUIERDA = 1;
 					DERECHA = 0;
 					tipo_flecha = '';
-				}else{
-					IZQUIERDA = 0;
+					break
+				case "1":
+					console.log("estoy en el 1");
+			       	IZQUIERDA = 0;
 					DERECHA = 1;
 					tipo_flecha = '_B_';
-				}
+					break
+				case "2":
+					if (Math.random() > 0.5){
+						IZQUIERDA = 1;
+						DERECHA = 0;
+						tipo_flecha = '';
+					}else{
+						IZQUIERDA = 0;
+						DERECHA = 1;
+						tipo_flecha = '_B_';
+					}
 			}
 
 			$('img', $flecha).attr({src:"/static/images/flecha"+ tipo_flecha +orientacion +".png"});
 			setTimeout(function(){
 				$flecha.css("left", posicion + "%" ).show();
-				tiempo_actual = new Date()
-				registro = registro + '{"type":"presentaFlecha", "time": "'+ tiempo_actual.getTime() +'" , "data": {"INVERTIDO":"'+DERECHA+'", "TIPO_FLECHA":"'+tipo_flecha+'","POS_FLECHA":"'+posicion+'","ORIENTACION_FLECHA":"'+orientacion+'","NIVEL":"'+nivel+'"}, "order": '+nro_evento+'}\n'
-				nro_evento++;
+				logger.log("presentaFlecha", {"INVERTIDO":DERECHA, "TIPO_FLECHA":tipo_flecha,
+											  "POS_FLECHA":posicion, "ORIENTACION_FLECHA":orientacion,
+											  "NIVEL":nivel});
 				set_juez('gray');
 				NO_CLICK = 0;
 				iteracion_reloj=1;
@@ -112,9 +105,9 @@
 					iteracion_reloj++;
 					if (iteracion_reloj>20){
 						$('p',$mensaje).text("Se te acabó el tiempo");
-						tiempo_actual = new Date()
-						registro = registro + '{"type":"timeOut", "time": "'+ tiempo_actual.getTime() +'" , "data": {"INVERTIDO":"'+DERECHA+'", "TIPO_FLECHA":"'+tipo_flecha+'","POS_FLECHA":"'+posicion+'","ORIENTACION_FLECHA":"'+orientacion+'","NIVEL":"'+nivel+'"}, "order": '+nro_evento+'}\n'
-						nro_evento++;
+						logger.log("timeOut", {"INVERTIDO":DERECHA, "TIPO_FLECHA":tipo_flecha,
+											   "POS_FLECHA":posicion, "ORIENTACION_FLECHA":orientacion,
+											   "NIVEL":nivel});
 						clearInterval(reloj);
 						NO_CLICK = 1;
 						$mensaje.show(500,recomenzar());
@@ -133,7 +126,6 @@
 			if (STOP == 1){return;} // para debug
 			correctas = 0;
 			incorrectas = 0;
-			$.ajax({url:'/save_stroop_game/', data:{'game_id':id_juego, 'log': registro}, type:'POST', dataType:'json'})				
 			registro = '';
 			$puntaje.animate({width: "0%"},300);
 			reloj_entretiempo = setTimeout(function(){
@@ -158,9 +150,7 @@
 			if((e.which == LEFT_KEY && orientacion == IZQUIERDA) ||
 			   (e.which == RIGHT_KEY && orientacion == DERECHA)){
 				correctas++;
-				tiempo_actual = new Date()
-				registro = registro + '{"type":"respuestaCorrecta", "time": "'+ tiempo_actual.getTime() +'" , "data": {"NRO_CORRECTAS":"'+correctas+'", "NRO_INCORRECTAS":"'+incorrectas+'"}, "order": '+nro_evento+'}\n'
-				nro_evento++;
+				logger.log("respuestaCorrecta", {"NRO_CORRECTAS":correctas, "NRO_INCORRECTAS":incorrectas});
 				clearInterval(reloj);
 				console.log("Desactivado vale: "+reloj);
 				$puntaje.animate({width: correctas/CORRECTAS_OBJETIVO*20+"%"},300);
@@ -173,9 +163,7 @@
 				}
 			}else{
 				incorrectas++;
-				tiempo_actual = new Date()
-				registro = registro + '{"type":"respuestaIncorrecta", "time": "'+ tiempo_actual.getTime() +'" , "data": {"NRO_CORRECTAS":"'+correctas+'", "NRO_INCORRECTAS":"'+incorrectas+'"}, "order": '+nro_evento+'}\n'
-				nro_evento++;
+				logger.log("respuestaIncorrecta", {"NRO_CORRECTAS":correctas, "NRO_INCORRECTAS":incorrectas});
 				clearInterval(reloj);
 				aguja.setAttribute("transform","rotate(0,75,75)");
 				set_juez('red');
