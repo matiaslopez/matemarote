@@ -7,251 +7,268 @@
 <script type="text/javascript" src="/static/js/JSON.js"></script>
 <script type="text/javascript" src="/static/js/logger.js"></script>
 <script type="text/javascript">
-	$(function(){
-		var posicion,
-			orientacion, //0 es derecha y 1 es izquierda
-			$juez = $('div#juez'),
-			$flecha = $('div#flecha'),
-			$mensaje = $('div#mensaje'),
-			$puntaje = $("div#puntaje"),
-			nivel = 0,
-			tipo_flecha = '',
-			tiempo_trial = 5000,
-			LEFT_KEY = 32,
-			RIGHT_KEY = 13,
-			IZQUIERDA = 1,
-			DERECHA = 0,
-			CORRECTAS_OBJETIVO = 15,
-			correctas = 0,
-			INCORRECTAS_MAX = 3,
-			incorrectas = 0,
-			NO_CLICK=0,
-			reloj,
-			reloj_entretiempo,
-			iteracion_reloj=0,
-			STOP = 0,
-			logger;
+    $(function(){
+        var posicion,
+            orientacion, //0 es derecha y 1 es izquierda
+            $juez = $('div#juez'),
+            $flecha = $('div#flecha'),
+            $mensaje = $('div#mensaje'),
+            $puntaje = $("div#puntaje"),
+            nivel = 0,
+            tipo_flecha = '',
+            tiempo_trial = 1100,
+            LEFT_KEY = 32,
+            RIGHT_KEY = 13,
+            RESTART_KEY = 114,
+            IZQUIERDA = 1,
+            DERECHA = 0,
+            CORRECTAS_OBJETIVO = 3,
+            correctas = 0,
+            INCORRECTAS_MAX = 3,
+            incorrectas = 0,
+            NO_CLICK=0,
+            reloj,
+            reloj_entretiempo,
+            iteracion_reloj=0,
+            logger;
 
-		$.ajax({url:'{% url select_player %}', async:false, data:{'player_id':1}, type:'POST', dataType:'json'});
-		$.ajax({url:'{% url create_stroop_game %}', async:false, dataType:'json',
-		        success:function(x){
-			 			logger = new Logger('{% url save_stroop_game %}', x.game_id);
-		        }});
-		    
+        $.ajax({url:'{% url select_player %}', async:false, data:{'player_id':1}, type:'POST', dataType:'json'});
+        $.ajax({url:'{% url create_stroop_game %}', async:false, dataType:'json',
+                success:function(x){
+                         logger = new Logger('{% url save_stroop_game %}', x.game_id);
+                }});
+            
 
-		$("select").change(function(){ // Fijar el nivel con el DropDown box
-			nivel = $("#niveles option:selected").val();
-			tiempo_trial = $("#tiempos option:selected").val();
-			logger.log('cambioNivel', {"NIVEL":nivel, "TIEMPO_TRIAL":tiempo_trial});
-			
-			$('p',$mensaje).text("Recomenzando...");
-			$mensaje.show();
-			if (NO_CLICK == 0){
-				console.log("Reseteo el reloj");
-				clearInterval(reloj);
-				aguja.setAttribute("transform","rotate(0,75,75)");
-			}else{
-				clearTimeout(reloj_entretiempo);
-			}
-			$("select").hide();
-			recomenzar();
-		});
+        $("select").change(function(){ // Fijar el nivel con el DropDown box
+            nivel = $("#niveles option:selected").val();
+            tiempo_trial = $("#tiempos option:selected").val();
+            logger.log('cambioNivel', {"NIVEL":nivel, "TIEMPO_TRIAL":tiempo_trial});
+            
+            $('p',$mensaje).text("Recomenzando...");
+            $mensaje.show();
+            if (NO_CLICK == 0){
+                console.log("Reseteo el reloj");
+                clearInterval(reloj);
+                aguja.setAttribute("transform","rotate(0,75,75)");
+            }else{
+                clearTimeout(reloj_entretiempo);
+            }
+            recomenzar();
+        });
 
-		$('#reloj').svg();            
-		var svg = $('#reloj').svg('get');
-		svg.circle(75, 75, 70,{fill: 'none', stroke: 'red', 'stroke-width': 5});  // Usamos svg-jquery para dibujar
-		var aguja = svg.line(75,75,75,10,{stroke: 'red', 'stroke-width': 5,transform: 'rotate(0, 75, 75)'});		
+        $('#reloj').svg();            
+        var svg = $('#reloj').svg('get');
+        svg.circle(75, 75, 70,{fill: 'none', stroke: 'red', 'stroke-width': 5});  // Usamos svg-jquery para dibujar
+        var aguja = svg.line(75,75,75,10,{stroke: 'red', 'stroke-width': 5,transform: 'rotate(0, 75, 75)'});        
 
-		function presentar_flecha(){
-			$flecha.hide();
-			posicion = Math.floor(Math.random()*90);
-			orientacion = Math.floor(Math.random()*2);
-			
-			switch (nivel) {
- 			   case "0":
-			       	IZQUIERDA = 1;
-					DERECHA = 0;
-					tipo_flecha = '';
-					break
-				case "1":
-					console.log("estoy en el 1");
-			       	IZQUIERDA = 0;
-					DERECHA = 1;
-					tipo_flecha = '_B_';
-					break
-				case "2":
-					if (Math.random() > 0.5){
-						IZQUIERDA = 1;
-						DERECHA = 0;
-						tipo_flecha = '';
-					}else{
-						IZQUIERDA = 0;
-						DERECHA = 1;
-						tipo_flecha = '_B_';
-					}
-			}
+        function presentar_flecha(){
+            $flecha.hide();
+            posicion = Math.floor(Math.random()*90);
+            orientacion = Math.floor(Math.random()*2);
+            console.log("Estoy en el nivel: "+nivel);
+            switch (nivel) {
+                case 0:
+                       IZQUIERDA = 1;
+                    DERECHA = 0;
+                    tipo_flecha = '';
+                    break
+                case 1:
+                    console.log("estoy en el 1");
+                       IZQUIERDA = 0;
+                    DERECHA = 1;
+                    tipo_flecha = '_B_';
+                    break
+                case 2:
+                    if (Math.random() > 0.5){
+                        IZQUIERDA = 1;
+                        DERECHA = 0;
+                        tipo_flecha = '';
+                    }else{
+                        IZQUIERDA = 0;
+                        DERECHA = 1;
+                        tipo_flecha = '_B_';
+                    }
+            }
 
-			$('img', $flecha).attr({src:"/static/images/flecha"+ tipo_flecha +orientacion +".png"});
-			setTimeout(function(){
-				$flecha.css("left", posicion + "%" ).show();
-				logger.log("presentaFlecha", {"INVERTIDO":DERECHA, "POS_FLECHA":posicion, "ORIENTACION_FLECHA":orientacion,
-											  "NIVEL":nivel});
-				set_juez('gray');
-				NO_CLICK = 0;
-				iteracion_reloj=1;
-				reloj = setInterval(function(){
-					aguja.setAttribute("transform","rotate("+Math.round(iteracion_reloj*360/20)+",75,75)");
-					iteracion_reloj++;
-					if (iteracion_reloj>20){
-						$('p',$mensaje).text("Se te acabó el tiempo");
-						logger.log("timeOut", {"INVERTIDO":DERECHA, "TIPO_FLECHA":tipo_flecha,
-											   "POS_FLECHA":posicion, "ORIENTACION_FLECHA":orientacion,
-											   "NIVEL":nivel});
-						clearInterval(reloj);
-						NO_CLICK = 1;
-						$mensaje.show(500,recomenzar());
-					}
-				},Math.round(tiempo_trial/20));
-				console.log("Activado vale: "+reloj);
-			}, 500);
-		}
-	
+            $('img', $flecha).attr({src:"/static/images/flecha"+ tipo_flecha +orientacion +".png"});
+            setTimeout(function(){
+                $flecha.css("left", posicion + "%" ).show();
+                logger.log("presentaFlecha", {"INVERTIDO":DERECHA, "POS_FLECHA":posicion, "ORIENTACION_FLECHA":orientacion,
+                                              "NIVEL":nivel});
+                set_juez('gray');
+                NO_CLICK = 0;
+                iteracion_reloj=1;
+                reloj = setInterval(function(){
+                    aguja.setAttribute("transform","rotate("+Math.round(iteracion_reloj*360/20)+",75,75)");
+                    iteracion_reloj++;
+                    if (iteracion_reloj>20){
+                        $('p',$mensaje).text("Se te acabó el tiempo- (R)estart");
+                        logger.log("timeOut", {"INVERTIDO":DERECHA, "TIPO_FLECHA":tipo_flecha,
+                                               "POS_FLECHA":posicion, "ORIENTACION_FLECHA":orientacion,
+                                               "NIVEL":nivel});
+                        clearInterval(reloj);
+                        NO_CLICK = 1;
+                        $mensaje.show();
+                    }
+                },Math.round(tiempo_trial/20));
+                console.log("Activado vale: "+reloj);
+            }, 500);
+        }
+    
 
-		function set_juez(color){
-			$juez.css("background-color", color);
-		}
+        function set_juez(color){
+            $juez.css("background-color", color);
+        }
 
-		function recomenzar(){
-			if (STOP == 1){return;} // para debug
-			correctas = 0;
-			incorrectas = 0;
-			registro = '';
-			$puntaje.animate({width: "0%"},300);
-			reloj_entretiempo = setTimeout(function(){
-				$mensaje.hide();
-				presentar_flecha();
-				$("select").show();
-			},3000);
-		}
+        function recomenzar(gano){
+            if (gano) {
+                tiempo_trial = tiempo_trial - 100;
+                if (tiempo_trial<500){
+                    $('p',$mensaje).text("Capo mastro, siguiente nivel.");
+                    tiempo_trial = 1100;
+                    nivel++;
+                    console.log("nivel: "+nivel);
+                    if (nivel>2){
+                        $('p',$mensaje).text("Premio teclado mas rapido del oeste - moron por ejemplo");
+                        nivel = 0;
+                        return;
+                    }
+                }
+            }else{
+                tiempo_trial=1100;
+                $('p',$mensaje).text("Ahora dale de vuelta desde el lento");
+            }
+            correctas = 0;
+            incorrectas = 0;
+            $puntaje.animate({width: "0%"},300);
+            reloj_entretiempo = setTimeout(function(){
+                presentar_flecha();
+                $mensaje.hide();
+            },2000);
+        }
 
-		$juez.click(function(){
-			console.log("parado");
-			STOP =1;
-		});
+        $juez.click(function(){
+            console.log("parado");
+            STOP =1;
+        });
 
-		$(document).keypress(function(e){
-			console.log('clicked:', e);
-			if((e.which != LEFT_KEY && e.which != RIGHT_KEY)||NO_CLICK==1){
-				return; //Lo dejamos errarle a la tecla tranquilo.
-			}
+        $(document).keypress(function(e){
+            console.log('clicked:', e);
+            if((e.which != LEFT_KEY && e.which != RIGHT_KEY)||NO_CLICK==1){
+                if(e.which == RESTART_KEY){
+                    recomenzar(0);
+                }
+                    return; //Lo dejamos errarle a la tecla tranquilo.
+            }
 
-			NO_CLICK=1;
-			if((e.which == LEFT_KEY && orientacion == IZQUIERDA) ||
-			   (e.which == RIGHT_KEY && orientacion == DERECHA)){
-				correctas++;
-				logger.log("respuestaCorrecta", {"NRO_CORRECTAS":correctas, "NRO_INCORRECTAS":incorrectas});
-				clearInterval(reloj);
-				console.log("Desactivado vale: "+reloj);
-				$puntaje.animate({width: correctas/CORRECTAS_OBJETIVO*20+"%"},300);
-				aguja.setAttribute("transform","rotate(0,75,75)");
-				set_juez('green');
-				if(correctas >= CORRECTAS_OBJETIVO){
-					$('p',$mensaje).text("Groso, le ganaste a la flecha.");
-					$mensaje.show(500, recomenzar());
-					return;
-				}
-			}else{
-				incorrectas++;
-				logger.log("respuestaIncorrecta", {"NRO_CORRECTAS":correctas, "NRO_INCORRECTAS":incorrectas});
-				clearInterval(reloj);
-				aguja.setAttribute("transform","rotate(0,75,75)");
-				set_juez('red');
-				if(incorrectas >= INCORRECTAS_MAX){
-					$('p',$mensaje).text("Oops... le erraste a la direccion.");
-					$mensaje.show(500, recomenzar());
-					return;
-				}
-			}
-			presentar_flecha();
-		});
-		
-		$flecha.append('<img src="#">');
-		presentar_flecha();
+            NO_CLICK=1;
+            if((e.which == LEFT_KEY && orientacion == IZQUIERDA) ||
+               (e.which == RIGHT_KEY && orientacion == DERECHA)){
+                correctas++;
+                logger.log("respuestaCorrecta", {"NRO_CORRECTAS":correctas, "NRO_INCORRECTAS":incorrectas});
+                clearInterval(reloj);
+                console.log("Desactivado vale: "+reloj);
+                $puntaje.animate({width: correctas/CORRECTAS_OBJETIVO*20+"%"},300);
+                aguja.setAttribute("transform","rotate(0,75,75)");
+                set_juez('green');
+                if(correctas >= CORRECTAS_OBJETIVO){
+                    $('p',$mensaje).text("Groso, ahora mas rapido. ("+(tiempo_trial-100)+" LocoSeg)");
+                    $mensaje.show();
+                    recomenzar(1);
+                    return;
+                }
+            }else{
+                incorrectas++;
+                logger.log("respuestaIncorrecta", {"NRO_CORRECTAS":correctas, "NRO_INCORRECTAS":incorrectas});
+                clearInterval(reloj);
+                aguja.setAttribute("transform","rotate(0,75,75)");
+                set_juez('red');
+                if(incorrectas >= INCORRECTAS_MAX){
+                    $('p',$mensaje).text("Oops... le erraste a la direccion. (R)estart");
+                    $mensaje.show();
+                    return;
+                }
+            }
+            presentar_flecha();
+        });
+        
+        $flecha.append('<img src="#">');
+        presentar_flecha();
 
-	});
+    });
 </script>
 
 <style type="text/css">
 body { 
-	margin: 0px;
-	overflow:hidden;
-	background: #3D3D3D;
-	font-family: Helvetica;
+    margin: 0px;
+    overflow:hidden;
+    background: #3D3D3D;
+    font-family: Helvetica;
 }
 
 div#flecha {
-	background-color: transparent;
-	text-align: center;
-	color: #FF0;
-	font-size: 50;
-	height: 75;
-	width: 100;
-	position: absolute;
-	top: 50%;
-	left: 100;
+    background-color: transparent;
+    text-align: center;
+    color: #FF0;
+    font-size: 50;
+    height: 75;
+    width: 100;
+    position: absolute;
+    top: 50%;
+    left: 100;
 }
 
 div#juez {
-	width: 100;
-	height: 100;
-	position: absolute;
-	left: 50%;
-	top: 10%;
-	margin-left: -50;
+    width: 100;
+    height: 100;
+    position: absolute;
+    left: 50%;
+    top: 10%;
+    margin-left: -50;
 }
 
 div#mensaje {
-	display: none;
-	width: 1000;
-	text-align: center;
-	color: orange;
-	font-size: 35;
-	height: 100;
-	position: absolute;
-	left: 50%;
-	top: 45%;
-	margin-left: -500;
-	margin-top: -50;
+    display: none;
+    width: 1000;
+    text-align: center;
+    color: #00BBBB;
+    font-size: 35;
+    height: 100;
+    position: absolute;
+    left: 50%;
+    top: 45%;
+    margin-left: -500;
+    margin-top: -50;
 
 }
 div#reloj{
-	position: absolute;
-	top: 5%;
-	left: 80%;
-	width: 150;
-	height: 150;
+    position: absolute;
+    top: 5%;
+    left: 80%;
+    width: 150;
+    height: 150;
 
 }
 div#puntaje{
-	position: absolute;
-	top: 15%;
-	left: 0%;
-	width: 0%;
-	height: 5%;
-	background-color: red;
-	color:white;
+    position: absolute;
+    top: 15%;
+    left: 0%;
+    width: 0%;
+    height: 5%;
+    background-color: red;
+    color:white;
 
 }
 div#puntaje_label{
-	position: absolute;
-	text-align:center;
-	top: 15%;
-	left: 0%;
-	width: 20%;
-	height: 5%;
-	background-color: red;
-	opacity: 0.3;
-	color:white;
+    position: absolute;
+    text-align:center;
+    top: 15%;
+    left: 0%;
+    width: 20%;
+    height: 5%;
+    background-color: red;
+    opacity: 0.3;
+    color:white;
 
 }
 
@@ -259,20 +276,20 @@ div#puntaje_label{
 </head>
 <body>
 
-<select id="niveles">
-<option value="0" selected	>Primer nivel</option>
-<option value="1"		>Segundo nivel</option>
-<option value="2"		>Tercer nivel</option>
+<select id="niveles" disabled>
+<option value="0" selected    >Primer nivel</option>
+<option value="1"        >Segundo nivel</option>
+<option value="2"        >Tercer nivel</option>
 </select>
 
-<select id="tiempos">
-<option value="200"			>0.2 s</option>
-<option value="500"			>0.5 s</option>
-<option value="1000"			>1 s</option>
-<option value="2000"			>2 s</option>
-<option value="3000"			>3 s</option>
-<option value="4000"			>4 s</option>
-<option value="5000" selected>5 s</option>
+<select id="tiempos" disabled>
+<option value="500"            >0.5 s</option>
+<option value="600"            >0.6 s</option>
+<option value="700"            >0.7 s</option>
+<option value="800"            >0.8 s</option>
+<option value="900"            >0.9 s</option>
+<option value="1000"            >1 s</option>
+<option value="1100" selected        >1.1 s</option>
 
 </select>
 
