@@ -28,6 +28,11 @@ def select_player(request):
                              planning_level=player.starting_planning_level)
     except Player.DoesNotExist:
         return json_response(status=404)
+
+def get_or_create_player(request):
+    player, x = Player.objects.get_or_create(name=request.POST['player_name'])
+    request.session['player'] = player
+    return json_response(status=200, player_id=player.id)
     
 def player_selected(func):
     def decorator(request, *a, **kw):

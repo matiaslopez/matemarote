@@ -13,7 +13,7 @@ function Logger(url, game_id){
 		 * time is the millisecond the event took place, it can be ommited
 		 * if the event occurred at the time this method was called. 
 		 * */
-		this.event_list.push({type:type, data:data, order: ++this.order,
+		this.event_list.push({type:type, data:data || {}, order: ++this.order,
 						 	  time: time || new Date().getTime()});
 	}
 	

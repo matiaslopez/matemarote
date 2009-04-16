@@ -7,111 +7,138 @@
 <script type="text/javascript" src="/static/js/JSON.js"></script>
 <script type="text/javascript" src="/static/js/logger.js"></script>
 <script type="text/javascript">
+    function ControlGame(file){
+        this.trials = $.map(file.trials, function(obj, idx){ obj.idx = idx; return obj; });
+
+        this.max_incorrectas = file.max_incorrectas;
+        var trial_idx = 0,
+            checkpoint = 0;
+
+        this.trial_idx = function(){
+            return trial_idx;
+        }
+
+        this.current_trial = function(){
+            return this.trials[trial_idx];
+        }
+
+        this.next_trial = function(){
+            if(trial_idx+1 < this.trials.length){
+                trial_idx++;
+                if(this.current_trial().checkpoint){
+                    checkpoint = trial_idx;
+                }
+                return true;
+            }else{
+                return false;
+            }
+        }
+
+        this.goto_last_checkpoint = function(){
+            trial_idx = checkpoint;
+        }
+        
+        this.reset = function(){
+            trial_idx = 0;
+            checkpoint = 0;
+        }
+    }
+
+    function ScoreKeeper($score_div, total_trials){
+        this.total_trials = total_trials;
+        this.div = $score_div;
+        this.set_score = function(current_trial, checkpoint){
+            this.div.animate({width: current_trial/this.total_trials * 100+"%"}, 300);
+            if(checkpoint){
+                this.div.html('Checkpoint at:'+current_trial);
+            }
+        }
+        this.reset = function(){
+            this.div.html('');
+            this.set_score(0);
+        }
+    }
+
+    function show_message($div, text, callback){
+        $div.html(text).fadeIn();
+        setTimeout(function(){
+            $div.fadeOut();
+            callback && callback();
+        },2000);
+    }
+
+    var game_file = {'max_incorrectas':1,
+                     'trials': [{kind:'forward', time:5000},
+                               {kind:'inverse', time:5000},
+                               {kind:'forward', time:4500},
+                               {kind:'inverse', time:4500},
+                               {kind:'forward', time:4900, checkpoint: true},
+                               {kind:'inverse', time:4900},
+                               {kind:'forward', time:4700},
+                               {kind:'inverse', time:4200, checkpoint: true}]};
+    
     $(function(){
-        var posicion,
-            orientacion, //0 es derecha y 1 es izquierda
+        var LEFT_KEY = 97,//a
+            RIGHT_KEY = 108,//l
+            RESTART_KEY = 114,
             $juez = $('div#juez'),
             $flecha = $('div#flecha'),
             $mensaje = $('div#mensaje'),
-            $puntaje = $("div#puntaje"),
-            nivel = 0,
-            tipo_flecha = '',
-            tiempo_trial = 1100,
-            LEFT_KEY = 32,
-            RIGHT_KEY = 13,
-            RESTART_KEY = 114,
-            IZQUIERDA = 1,
-            DERECHA = 0,
-            CORRECTAS_OBJETIVO = 3,
-            correctas = 0,
-            INCORRECTAS_MAX = 3,
-            incorrectas = 0,
-            NO_CLICK=0,
             reloj,
-            reloj_entretiempo,
-            iteracion_reloj=0,
+            iteracion_reloj = 0,
+            recieve_input = false,
+            posicion,
+            orientacion, //'left','right'
+            incorrectas,
+            current_game = new ControlGame(game_file),
+            score = new ScoreKeeper($("div#puntaje"), game_file.trials.length),
             logger;
-
-        $.ajax({url:'{% url select_player %}', async:false, data:{'player_id':1}, type:'POST', dataType:'json'});
+        
+        
+        var player_name = '';
+        while(!player_name){
+            player_name = prompt('Who are you?');
+        }
+        $.ajax({url:'{% url get_or_create_player %}',
+                async:false,
+                data:{'player_name': player_name},
+                type:'POST',
+                dataType:'json'});
         $.ajax({url:'{% url create_stroop_game %}', async:false, dataType:'json',
                 success:function(x){
                          logger = new Logger('{% url save_stroop_game %}', x.game_id);
                 }});
-            
 
-        $("select").change(function(){ // Fijar el nivel con el DropDown box
-            nivel = $("#niveles option:selected").val();
-            tiempo_trial = $("#tiempos option:selected").val();
-            logger.log('cambioNivel', {"NIVEL":nivel, "TIEMPO_TRIAL":tiempo_trial});
-            
-            $('p',$mensaje).text("Recomenzando...");
-            $mensaje.show();
-            if (NO_CLICK == 0){
-                console.log("Reseteo el reloj");
-                clearInterval(reloj);
-                aguja.setAttribute("transform","rotate(0,75,75)");
-            }else{
-                clearTimeout(reloj_entretiempo);
-            }
-            recomenzar();
-        });
-
-        $('#reloj').svg();            
+        $('#reloj').svg();
         var svg = $('#reloj').svg('get');
-        svg.circle(75, 75, 70,{fill: 'none', stroke: 'red', 'stroke-width': 5});  // Usamos svg-jquery para dibujar
-        var aguja = svg.line(75,75,75,10,{stroke: 'red', 'stroke-width': 5,transform: 'rotate(0, 75, 75)'});        
+        svg.circle(200, 200, 190,{fill: 'none', stroke: '#1B7AE2', 'stroke-width': 8});  // Usamos svg-jquery para dibujar
+        var aguja = svg.line(200,200,200,50,{stroke: '#1B7AE2', 'stroke-width': 8,transform: 'rotate(0, 200, 200)'});        
 
         function presentar_flecha(){
             $flecha.hide();
             posicion = Math.floor(Math.random()*90);
-            orientacion = Math.floor(Math.random()*2);
-            console.log("Estoy en el nivel: "+nivel);
-            switch (nivel) {
-                case 0:
-                       IZQUIERDA = 1;
-                    DERECHA = 0;
-                    tipo_flecha = '';
-                    break
-                case 1:
-                    console.log("estoy en el 1");
-                       IZQUIERDA = 0;
-                    DERECHA = 1;
-                    tipo_flecha = '_B_';
-                    break
-                case 2:
-                    if (Math.random() > 0.5){
-                        IZQUIERDA = 1;
-                        DERECHA = 0;
-                        tipo_flecha = '';
-                    }else{
-                        IZQUIERDA = 0;
-                        DERECHA = 1;
-                        tipo_flecha = '_B_';
-                    }
-            }
-
-            $('img', $flecha).attr({src:"/static/images/flecha"+ tipo_flecha +orientacion +".png"});
+            orientacion = ['right','left'][Math.floor(Math.random()*2)];
+            var trial = current_game.current_trial();
+            $('img', $flecha).attr({src:"/static/images/"+ trial.kind +'_'+ orientacion +".png"});
             setTimeout(function(){
                 $flecha.css("left", posicion + "%" ).show();
-                logger.log("presentaFlecha", {"INVERTIDO":DERECHA, "POS_FLECHA":posicion, "ORIENTACION_FLECHA":orientacion,
-                                              "NIVEL":nivel});
-                set_juez('gray');
-                NO_CLICK = 0;
+                logger.log("presentaFlecha", {"trial":trial, "posicion":posicion,
+                                              "orientacion":orientacion, "trial_idx":trial.idx});
+                set_juez('#3D3D3D');
+                recieve_input = true;
                 iteracion_reloj=1;
                 reloj = setInterval(function(){
-                    aguja.setAttribute("transform","rotate("+Math.round(iteracion_reloj*360/20)+",75,75)");
+                    aguja.setAttribute("transform","rotate("+Math.round(iteracion_reloj*360/20)+",200,200)");
                     iteracion_reloj++;
                     if (iteracion_reloj>20){
-                        $('p',$mensaje).text("Se te acabó el tiempo- (R)estart");
-                        logger.log("timeOut", {"INVERTIDO":DERECHA, "TIPO_FLECHA":tipo_flecha,
-                                               "POS_FLECHA":posicion, "ORIENTACION_FLECHA":orientacion,
-                                               "NIVEL":nivel});
+                        current_game.goto_last_checkpoint();
+                        score.set_score(current_game.current_trial().idx);
+                        presentar_flecha();
+                        logger.log("timeOut");
                         clearInterval(reloj);
-                        NO_CLICK = 1;
-                        $mensaje.show();
+                        recieve_input = false;
                     }
-                },Math.round(tiempo_trial/20));
-                console.log("Activado vale: "+reloj);
+                },Math.round(trial.time/20));
             }, 500);
         }
     
@@ -120,81 +147,64 @@
             $juez.css("background-color", color);
         }
 
-        function recomenzar(gano){
-            if (gano) {
-                tiempo_trial = tiempo_trial - 100;
-                if (tiempo_trial<500){
-                    $('p',$mensaje).text("Capo mastro, siguiente nivel.");
-                    tiempo_trial = 1100;
-                    nivel++;
-                    console.log("nivel: "+nivel);
-                    if (nivel>2){
-                        $('p',$mensaje).text("Premio teclado mas rapido del oeste - moron por ejemplo");
-                        nivel = 0;
-                        return;
-                    }
-                }
-            }else{
-                tiempo_trial=1100;
-                $('p',$mensaje).text("Ahora dale de vuelta desde el lento");
-            }
-            correctas = 0;
+        function reset(){
+            current_game.reset();
+            score.reset();
             incorrectas = 0;
-            $puntaje.animate({width: "0%"},300);
-            reloj_entretiempo = setTimeout(function(){
+            clearInterval(reloj);
+            setTimeout(function(){
                 presentar_flecha();
                 $mensaje.hide();
             },2000);
         }
 
-        $juez.click(function(){
-            console.log("parado");
-            STOP =1;
-        });
-
-        $(document).keypress(function(e){
-            console.log('clicked:', e);
-            if((e.which != LEFT_KEY && e.which != RIGHT_KEY)||NO_CLICK==1){
-                if(e.which == RESTART_KEY){
-                    recomenzar(0);
-                }
-                    return; //Lo dejamos errarle a la tecla tranquilo.
+        function handle_response(e){
+            if(e.which == RESTART_KEY){
+                reset();
+                return;
             }
+            if((e.which != LEFT_KEY && e.which != RIGHT_KEY) || !recieve_input){
+                return; //Lo dejamos errarle a la tecla tranquilo.
+            }
+            clearInterval(reloj);
+            recieve_input = false;
+            var correct = (e.which == LEFT_KEY && orientacion == 'left') ||
+                          (e.which == RIGHT_KEY && orientacion == 'right');
+            
+            correct = (current_game.current_trial().kind == 'forward') ? correct : !correct;
+            
+            var correctas = current_game.trial_idx();
+            if(correct){
+                logger.log("respuestaCorrecta", {"correctas":correctas, "incorrectas":incorrectas});
+                aguja.setAttribute("transform","rotate(0,200,200)");
+                set_juez('#729D1B');
 
-            NO_CLICK=1;
-            if((e.which == LEFT_KEY && orientacion == IZQUIERDA) ||
-               (e.which == RIGHT_KEY && orientacion == DERECHA)){
-                correctas++;
-                logger.log("respuestaCorrecta", {"NRO_CORRECTAS":correctas, "NRO_INCORRECTAS":incorrectas});
-                clearInterval(reloj);
-                console.log("Desactivado vale: "+reloj);
-                $puntaje.animate({width: correctas/CORRECTAS_OBJETIVO*20+"%"},300);
-                aguja.setAttribute("transform","rotate(0,75,75)");
-                set_juez('green');
-                if(correctas >= CORRECTAS_OBJETIVO){
-                    $('p',$mensaje).text("Groso, ahora mas rapido. ("+(tiempo_trial-100)+" LocoSeg)");
-                    $mensaje.show();
-                    recomenzar(1);
+                if(!current_game.next_trial()){
+                    show_message($mensaje,'Bien, terminaste todo el juego', reset);
+                    score.set_score(current_game.trials.length);
                     return;
+                }
+                if(current_game.current_trial().checkpoint){
+                    show_message($mensaje,'bien boludo bien!!!!!!!');
                 }
             }else{
                 incorrectas++;
-                logger.log("respuestaIncorrecta", {"NRO_CORRECTAS":correctas, "NRO_INCORRECTAS":incorrectas});
-                clearInterval(reloj);
-                aguja.setAttribute("transform","rotate(0,75,75)");
-                set_juez('red');
-                if(incorrectas >= INCORRECTAS_MAX){
-                    $('p',$mensaje).text("Oops... le erraste a la direccion. (R)estart");
-                    $mensaje.show();
-                    return;
+                logger.log("respuestaIncorrecta", {"correctas":correctas, "incorrectas":incorrectas});
+                aguja.setAttribute("transform","rotate(0,200,200)");
+                set_juez('#C52338');
+                if(incorrectas >= current_game.max_incorrectas){
+                    current_game.goto_last_checkpoint();
                 }
             }
+            var trial = current_game.current_trial();
+            score.set_score(trial.idx, trial.checkpoint);
             presentar_flecha();
-        });
+        }
+
+        $(document).keypress(handle_response);
         
         $flecha.append('<img src="#">');
-        presentar_flecha();
-
+        reset();
     });
 </script>
 
@@ -215,16 +225,16 @@ div#flecha {
     width: 100;
     position: absolute;
     top: 50%;
+    margin-top: -37px;
     left: 100;
 }
 
 div#juez {
-    width: 100;
-    height: 100;
+    width: 100%;
+    height: 100%;
     position: absolute;
-    left: 50%;
+    left: 0%;
     top: 10%;
-    margin-left: -50;
 }
 
 div#mensaje {
@@ -243,63 +253,36 @@ div#mensaje {
 }
 div#reloj{
     position: absolute;
-    top: 5%;
-    left: 80%;
-    width: 150;
-    height: 150;
+    top: 50%;
+    left: 50%;
+    width: 400px;
+    height: 400px;
+    margin-left: -200px;
+    margin-top: -200px;
 
 }
 div#puntaje{
     position: absolute;
-    top: 15%;
+    top: 0%;
     left: 0%;
+    height: 10%;
+    color:white;
+}
+
+div#puntaje{
+    background-color: #8018BD;
     width: 0%;
-    height: 5%;
-    background-color: red;
-    color:white;
-
 }
-div#puntaje_label{
-    position: absolute;
-    text-align:center;
-    top: 15%;
-    left: 0%;
-    width: 20%;
-    height: 5%;
-    background-color: red;
-    opacity: 0.3;
-    color:white;
 
-}
 
 </style>
 </head>
 <body>
-
-<select id="niveles" disabled>
-<option value="0" selected    >Primer nivel</option>
-<option value="1"        >Segundo nivel</option>
-<option value="2"        >Tercer nivel</option>
-</select>
-
-<select id="tiempos" disabled>
-<option value="500"            >0.5 s</option>
-<option value="600"            >0.6 s</option>
-<option value="700"            >0.7 s</option>
-<option value="800"            >0.8 s</option>
-<option value="900"            >0.9 s</option>
-<option value="1000"            >1 s</option>
-<option value="1100" selected        >1.1 s</option>
-
-</select>
-
-<div id="puntaje_label">Ganado</div>
 <div id="puntaje"></div>
 <div id="juez"></div>
 <div id="flecha"></div>
 <div id="mensaje"><p></p></div>
 <div id="reloj"></div>
 </body>
-
 </html>
 

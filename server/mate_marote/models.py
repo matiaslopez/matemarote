@@ -31,8 +31,8 @@ class MemoryGameFile(GameFile):
 class Player(models.Model, Named):
     name = models.CharField(max_length=255)
     created = models.DateTimeField(default=datetime.datetime.now)
-    starting_memory_level = models.IntegerField(null=True)
-    starting_planning_level = models.IntegerField(null=True)
+    starting_memory_level = models.IntegerField(null=True, default=0)
+    starting_planning_level = models.IntegerField(null=True, default=0)
 
 class LogEntry(models.Model):
     game = models.ForeignKey('Game', related_name='log_entries')

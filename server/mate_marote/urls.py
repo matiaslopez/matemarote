@@ -12,6 +12,7 @@ urlpatterns = patterns('',
     url(r'^debug/$', index, {'debug':True}, name="index_debug"),
     url(r'^player_list/$', player_list, name='list_players'),
     url(r'^select_player/$', select_player, name='select_player'),
+    url(r'^get_or_create_player/$', get_or_create_player, name='get_or_create_player'),
     url(r'^dummygame/(?P<swf>.*)/$', dummygame, name="dummygame"),
 
     #Memory
