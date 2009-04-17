@@ -44,19 +44,71 @@
         }
     }
 
-    function ScoreKeeper($score_div, total_trials){
+    function ScoreKeeper($checkpoint_div,$score_div, total_trials){
         this.total_trials = total_trials;
         this.div = $score_div;
         this.set_score = function(current_trial, checkpoint){
             this.div.animate({width: current_trial/this.total_trials * 100+"%"}, 300);
             if(checkpoint){
-                this.div.html('Checkpoint at:'+current_trial);
+                $checkpoint_div.animate({left:current_trial/this.total_trials * 100+"%"}, 300);
             }
         }
         this.reset = function(){
             this.div.html('');
-            this.set_score(0);
+            this.set_score(0,true);
         }
+    }
+
+    function TimeKeeper($reloj_div){
+        this.div = $reloj_div;
+        this.recieve_input = false;
+        this.div.svg();
+        this.svg = this.div.svg('get');
+        this.svg.circle(200, 200, 190,{fill: 'none', stroke: '#1B7AE2', 'stroke-width': 8});  // Usamos svg-jquery para dibujar
+        this.aguja = this.svg.line(200,200,200,50,{stroke: '#1B7AE2', 'stroke-width': 8,transform: 'rotate(0, 200, 200)'});
+ 
+        this.start_trial = function(time,callback){
+            this.recieve_input = true;
+             this.iteracion_reloj=0;
+            var scope = this;
+            function rotar(){
+                scope.aguja.setAttribute("transform","rotate("+Math.round(scope.iteracion_reloj*360/20)+",200,200)");
+                scope.iteracion_reloj++;
+                if (scope.iteracion_reloj>20){
+                    clearInterval(scope.reloj_trial);
+                    scope.recieve_input = false;
+                    return callback();
+                    }
+            }
+            this.reloj_trial = setInterval(rotar,time);
+        }
+
+        this.stop_trial = function(){
+            clearInterval(this.reloj_trial);
+            this.recieve_input = false;
+        }
+
+        this.reset = function(time, callback){
+            var scope = this;
+            this.recieve_input = false;
+            clearInterval(this.reloj_trial);
+            this.aguja.setAttribute("transform","rotate(0,200,200)");
+            function terminar(){
+                scope.recieve_input = false;
+                clearInterval(scope.reloj_trial);
+                console.log("limpioe el reloj ", scope.reloj_trial); 
+                return callback();
+            }
+            setTimeout(terminar,time);
+        }
+
+    }
+
+    function fin_trial(){
+        current_game.goto_last_checkpoint();
+        score.set_score(current_game.current_trial().idx);
+        presentar_flecha();
+        logger.log("timeOut");
     }
 
     function show_message($div, text, callback){
@@ -72,10 +124,38 @@
                                {kind:'inverse', time:5000},
                                {kind:'forward', time:4500},
                                {kind:'inverse', time:4500},
+                               {kind:'forward', time:5000},
+                               {kind:'inverse', time:5000},
+                               {kind:'forward', time:4500},
+                               {kind:'inverse', time:4500},
+                               {kind:'forward', time:5000},
+                               {kind:'inverse', time:5000},
+                               {kind:'forward', time:4500},
+                               {kind:'inverse', time:4500},     
                                {kind:'forward', time:4900, checkpoint: true},
-                               {kind:'inverse', time:4900},
-                               {kind:'forward', time:4700},
-                               {kind:'inverse', time:4200, checkpoint: true}]};
+                               {kind:'inverse', time:2000},
+                               {kind:'forward', time:2500},
+                               {kind:'inverse', time:2500},
+                               {kind:'forward', time:2000},
+                               {kind:'inverse', time:2000},
+                               {kind:'forward', time:1500},
+                               {kind:'inverse', time:1500},
+                               {kind:'forward', time:1000},
+                               {kind:'inverse', time:2000},
+                               {kind:'forward', time:1500},
+                               {kind:'inverse', time:1500},     
+                               {kind:'inverse', time:1200, checkpoint: true},
+                               {kind:'inverse', time:700},
+                               {kind:'forward', time:800},
+                               {kind:'inverse', time:600},
+                               {kind:'forward', time:500},
+                               {kind:'inverse', time:500},
+                               {kind:'forward', time:450},
+                               {kind:'inverse', time:600},
+                               {kind:'forward', time:750},
+                               {kind:'inverse', time:500},
+                               {kind:'forward', time:450},
+                               {kind:'inverse', time:450}]};
     
     $(function(){
         var LEFT_KEY = 97,//a
@@ -84,16 +164,16 @@
             $juez = $('div#juez'),
             $flecha = $('div#flecha'),
             $mensaje = $('div#mensaje'),
-            reloj,
             iteracion_reloj = 0,
             recieve_input = false,
             posicion,
             orientacion, //'left','right'
             incorrectas,
+            logger,
+            reloj = new TimeKeeper($('div#reloj')),
             current_game = new ControlGame(game_file),
-            score = new ScoreKeeper($("div#puntaje"), game_file.trials.length),
-            logger;
-        
+            score = new ScoreKeeper($("div#checkpoint"),$("div#puntaje"), game_file.trials.length);
+
         
         var player_name = '';
         while(!player_name){
@@ -109,10 +189,7 @@
                          logger = new Logger('{% url save_stroop_game %}', x.game_id);
                 }});
 
-        $('#reloj').svg();
-        var svg = $('#reloj').svg('get');
-        svg.circle(200, 200, 190,{fill: 'none', stroke: '#1B7AE2', 'stroke-width': 8});  // Usamos svg-jquery para dibujar
-        var aguja = svg.line(200,200,200,50,{stroke: '#1B7AE2', 'stroke-width': 8,transform: 'rotate(0, 200, 200)'});        
+               
 
         function presentar_flecha(){
             $flecha.hide();
@@ -125,20 +202,12 @@
                 logger.log("presentaFlecha", {"trial":trial, "posicion":posicion,
                                               "orientacion":orientacion, "trial_idx":trial.idx});
                 set_juez('#3D3D3D');
-                recieve_input = true;
-                iteracion_reloj=1;
-                reloj = setInterval(function(){
-                    aguja.setAttribute("transform","rotate("+Math.round(iteracion_reloj*360/20)+",200,200)");
-                    iteracion_reloj++;
-                    if (iteracion_reloj>20){
+                reloj.start_trial(trial.time/20,function(){
                         current_game.goto_last_checkpoint();
                         score.set_score(current_game.current_trial().idx);
                         presentar_flecha();
                         logger.log("timeOut");
-                        clearInterval(reloj);
-                        recieve_input = false;
-                    }
-                },Math.round(trial.time/20));
+                });                
             }, 500);
         }
     
@@ -151,7 +220,8 @@
             current_game.reset();
             score.reset();
             incorrectas = 0;
-            clearInterval(reloj);
+            reloj.reset(20000,function(){
+                show_message($mensaje,'Se termino todo el tiempo...(r)ecomenzar')});
             setTimeout(function(){
                 presentar_flecha();
                 $mensaje.hide();
@@ -163,11 +233,10 @@
                 reset();
                 return;
             }
-            if((e.which != LEFT_KEY && e.which != RIGHT_KEY) || !recieve_input){
+            if((e.which != LEFT_KEY && e.which != RIGHT_KEY) || !reloj.recieve_input){
                 return; //Lo dejamos errarle a la tecla tranquilo.
             }
-            clearInterval(reloj);
-            recieve_input = false;
+            reloj.stop_trial();
             var correct = (e.which == LEFT_KEY && orientacion == 'left') ||
                           (e.which == RIGHT_KEY && orientacion == 'right');
             
@@ -176,21 +245,18 @@
             var correctas = current_game.trial_idx();
             if(correct){
                 logger.log("respuestaCorrecta", {"correctas":correctas, "incorrectas":incorrectas});
-                aguja.setAttribute("transform","rotate(0,200,200)");
                 set_juez('#729D1B');
-
-                if(!current_game.next_trial()){
-                    show_message($mensaje,'Bien, terminaste todo el juego', reset);
+               if(!current_game.next_trial()){
+                    show_message($mensaje,'El teclado mas rápido del oeste - moron, p. ej-', reset);
                     score.set_score(current_game.trials.length);
                     return;
                 }
                 if(current_game.current_trial().checkpoint){
-                    show_message($mensaje,'bien boludo bien!!!!!!!');
+                    show_message($mensaje,'Groso, aseguraste puntaje.');
                 }
             }else{
                 incorrectas++;
                 logger.log("respuestaIncorrecta", {"correctas":correctas, "incorrectas":incorrectas});
-                aguja.setAttribute("transform","rotate(0,200,200)");
                 set_juez('#C52338');
                 if(incorrectas >= current_game.max_incorrectas){
                     current_game.goto_last_checkpoint();
@@ -217,6 +283,7 @@ body {
 }
 
 div#flecha {
+    display: none;
     background-color: transparent;
     text-align: center;
     color: #FF0;
@@ -267,11 +334,18 @@ div#puntaje{
     left: 0%;
     height: 10%;
     color:white;
-}
-
-div#puntaje{
     background-color: #8018BD;
     width: 0%;
+
+}
+
+div#checkpoint{
+    position: absolute;
+    top: 0%;
+    left: 0%;
+    height: 10%;
+    background-color: #34104E;
+    width: 2%;
 }
 
 
@@ -279,10 +353,11 @@ div#puntaje{
 </head>
 <body>
 <div id="puntaje"></div>
+<div id="checkpoint"></div>
 <div id="juez"></div>
+<div id="reloj"></div>
 <div id="flecha"></div>
 <div id="mensaje"><p></p></div>
-<div id="reloj"></div>
 </body>
 </html>
 
