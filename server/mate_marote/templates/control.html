@@ -48,9 +48,9 @@
         this.total_trials = total_trials;
         this.div = $score_div;
         this.set_score = function(current_trial, checkpoint){
-            this.div.animate({width: current_trial/this.total_trials * 100+"%"}, 300);
+            this.div.animate({width: current_trial/this.total_trials * 98+"%"}, 300);
             if(checkpoint){
-                $checkpoint_div.animate({left:current_trial/this.total_trials * 100+"%"}, 300);
+                $checkpoint_div.animate({left:current_trial/this.total_trials * 98 +"%"}, 300);
             }
         }
         this.reset = function(){
@@ -104,13 +104,6 @@
 
     }
 
-    function fin_trial(){
-        current_game.goto_last_checkpoint();
-        score.set_score(current_game.current_trial().idx);
-        presentar_flecha();
-        logger.log("timeOut");
-    }
-
     function show_message($div, text, callback){
         $div.html(text).fadeIn();
         setTimeout(function(){
@@ -119,43 +112,6 @@
         },2000);
     }
 
-    var game_file = {'max_incorrectas':1,
-                     'trials': [{kind:'forward', time:5000},
-                               {kind:'inverse', time:5000},
-                               {kind:'forward', time:4500},
-                               {kind:'inverse', time:4500},
-                               {kind:'forward', time:5000},
-                               {kind:'inverse', time:5000},
-                               {kind:'forward', time:4500},
-                               {kind:'inverse', time:4500},
-                               {kind:'forward', time:5000},
-                               {kind:'inverse', time:5000},
-                               {kind:'forward', time:4500},
-                               {kind:'inverse', time:4500},     
-                               {kind:'forward', time:4900, checkpoint: true},
-                               {kind:'inverse', time:2000},
-                               {kind:'forward', time:2500},
-                               {kind:'inverse', time:2500},
-                               {kind:'forward', time:2000},
-                               {kind:'inverse', time:2000},
-                               {kind:'forward', time:1500},
-                               {kind:'inverse', time:1500},
-                               {kind:'forward', time:1000},
-                               {kind:'inverse', time:2000},
-                               {kind:'forward', time:1500},
-                               {kind:'inverse', time:1500},     
-                               {kind:'inverse', time:1200, checkpoint: true},
-                               {kind:'inverse', time:700},
-                               {kind:'forward', time:800},
-                               {kind:'inverse', time:600},
-                               {kind:'forward', time:500},
-                               {kind:'inverse', time:500},
-                               {kind:'forward', time:450},
-                               {kind:'inverse', time:600},
-                               {kind:'forward', time:750},
-                               {kind:'inverse', time:500},
-                               {kind:'forward', time:450},
-                               {kind:'inverse', time:450}]};
     
     $(function(){
         var LEFT_KEY = 97,//a
@@ -170,10 +126,10 @@
             orientacion, //'left','right'
             incorrectas,
             logger,
+            game_file,
             reloj = new TimeKeeper($('div#reloj')),
-            current_game = new ControlGame(game_file),
-            score = new ScoreKeeper($("div#checkpoint"),$("div#puntaje"), game_file.trials.length);
-
+            current_game, 
+            score;
         
         var player_name = '';
         while(!player_name){
@@ -184,12 +140,17 @@
                 data:{'player_name': player_name},
                 type:'POST',
                 dataType:'json'});
+        $.ajax({url:'/static/levels/control_gamefile.txt', async:false, dataType:'json',
+                success:function(x){
+                         game_file = x;
+                }});
         $.ajax({url:'{% url create_stroop_game %}', async:false, dataType:'json',
                 success:function(x){
                          logger = new Logger('{% url save_stroop_game %}', x.game_id);
                 }});
-
                
+        current_game = new ControlGame(game_file);
+        score = new ScoreKeeper($("div#checkpoint"),$("div#puntaje"), game_file.trials.length);
 
         function presentar_flecha(){
             $flecha.hide();
@@ -220,7 +181,7 @@
             current_game.reset();
             score.reset();
             incorrectas = 0;
-            reloj.reset(20000,function(){
+            reloj.reset(120000,function(){
                 show_message($mensaje,'Se termino todo el tiempo...(r)ecomenzar')});
             setTimeout(function(){
                 presentar_flecha();
@@ -331,7 +292,7 @@ div#reloj{
 div#puntaje{
     position: absolute;
     top: 0%;
-    left: 0%;
+    left: 2%;
     height: 10%;
     color:white;
     background-color: #8018BD;
