@@ -48,7 +48,7 @@
         this.total_trials = total_trials;
         this.div = $score_div;
         this.set_score = function(current_trial, checkpoint){
-            this.div.animate({width: current_trial/this.total_trials * 98+"%"}, 300);
+            this.div.animate({width: current_trial/this.total_trials * 98 + 2 +"%"}, 300);
             if(checkpoint){
                 $checkpoint_div.animate({left:current_trial/this.total_trials * 98 +"%"}, 300);
             }
@@ -80,12 +80,18 @@
                     return callback();
                     }
             }
-            this.reloj_trial = setInterval(rotar,time);
+            this.reloj_trial = setInterval(rotar,time/20);
+        }
+
+        this.set_intertrial = function(reloj_intertrial){
+            this.reloj_intertrial = reloj_intertrial;
         }
 
         this.stop_trial = function(){
             clearInterval(this.reloj_trial);
+            this.reloj_intertrial = 0;
             this.recieve_input = false;
+            this.aguja.setAttribute("transform","rotate(0,200,200)");
         }
 
         this.reset = function(time, callback){
@@ -96,7 +102,7 @@
             function terminar(){
                 scope.recieve_input = false;
                 clearInterval(scope.reloj_trial);
-                console.log("limpioe el reloj ", scope.reloj_trial); 
+                clearTimeout(scope.reloj_intertrial);
                 return callback();
             }
             setTimeout(terminar,time);
@@ -158,18 +164,19 @@
             orientacion = ['right','left'][Math.floor(Math.random()*2)];
             var trial = current_game.current_trial();
             $('img', $flecha).attr({src:"/static/images/"+ trial.kind +'_'+ orientacion +".png"});
-            setTimeout(function(){
+            var reloj_intertrial = setTimeout(function(){
                 $flecha.css("left", posicion + "%" ).show();
                 logger.log("presentaFlecha", {"trial":trial, "posicion":posicion,
                                               "orientacion":orientacion, "trial_idx":trial.idx});
                 set_juez('#3D3D3D');
-                reloj.start_trial(trial.time/20,function(){
+                reloj.start_trial(trial.time,function(){
                         current_game.goto_last_checkpoint();
                         score.set_score(current_game.current_trial().idx);
                         presentar_flecha();
                         logger.log("timeOut");
                 });                
             }, 500);
+            reloj.set_intertrial(reloj_intertrial);
         }
     
 
@@ -181,7 +188,7 @@
             current_game.reset();
             score.reset();
             incorrectas = 0;
-            reloj.reset(120000,function(){
+            reloj.reset(90000,function(){
                 show_message($mensaje,'Se termino todo el tiempo...(r)ecomenzar')});
             setTimeout(function(){
                 presentar_flecha();
@@ -292,7 +299,7 @@ div#reloj{
 div#puntaje{
     position: absolute;
     top: 0%;
-    left: 2%;
+    left: 0%;
     height: 10%;
     color:white;
     background-color: #8018BD;
