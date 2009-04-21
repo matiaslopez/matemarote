@@ -94,11 +94,12 @@
             this.aguja.setAttribute("transform","rotate(0,200,200)");
         }
 
-        this.reset = function(time, callback){
+        this.reset = function(time,$reloj_global, callback){
             var scope = this;
             this.recieve_input = false;
             clearInterval(this.reloj_trial);
             this.aguja.setAttribute("transform","rotate(0,200,200)");
+            $reloj_global.animate({width: "100%"}, time);
             function terminar(){
                 scope.recieve_input = false;
                 clearInterval(scope.reloj_trial);
@@ -188,7 +189,7 @@
             current_game.reset();
             score.reset();
             incorrectas = 0;
-            reloj.reset(90000,function(){
+            reloj.reset(90000,$("div#tiempo_total"),function(){
                 show_message($mensaje,'Se termino todo el tiempo...(r)ecomenzar')});
             setTimeout(function(){
                 presentar_flecha();
@@ -300,9 +301,20 @@ div#puntaje{
     position: absolute;
     top: 0%;
     left: 0%;
-    height: 10%;
+    height: 5%;
     color:white;
     background-color: #8018BD;
+    width: 0%;
+
+}
+
+div#tiempo_total{
+    position: absolute;
+    top: 5%;
+    left: 0%;
+    height: 5%;
+    color:white;
+    background-color: #16A18C;
     width: 0%;
 
 }
@@ -311,7 +323,7 @@ div#checkpoint{
     position: absolute;
     top: 0%;
     left: 0%;
-    height: 10%;
+    height: 5%;
     background-color: #34104E;
     width: 2%;
 }
@@ -321,6 +333,7 @@ div#checkpoint{
 </head>
 <body>
 <div id="puntaje"></div>
+<div id="tiempo_total"></div>
 <div id="checkpoint"></div>
 <div id="juez"></div>
 <div id="reloj"></div>
