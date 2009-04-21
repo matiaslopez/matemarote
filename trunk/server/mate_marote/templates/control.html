@@ -95,18 +95,34 @@
         }
 
         this.reset = function(time,$reloj_global, callback){
+            var i = 0;
             var scope = this;
             this.recieve_input = false;
+            this.$reloj_global = $reloj_global;
             clearInterval(this.reloj_trial);
+            clearInterval(this.timer_global);
+            clearInterval(this.reloj_intertrial);
             this.aguja.setAttribute("transform","rotate(0,200,200)");
-            $reloj_global.animate({width: "100%"}, time);
+            this.$reloj_global.animate({width: "0%"},1000);
+            
+            function animar_global(){
+                i++;
+                scope.$reloj_global.css("width", i + "%");
+                if (i>100){
+                    i =0;
+                    terminar();
+                    clearInterval(scope.timer_global);
+                }
+            }
+            
             function terminar(){
                 scope.recieve_input = false;
                 clearInterval(scope.reloj_trial);
                 clearTimeout(scope.reloj_intertrial);
+                scope.$reloj_global.animate({width: "0%"},1000);
                 return callback();
             }
-            setTimeout(terminar,time);
+            this.timer_global = setInterval(animar_global,time/100);
         }
 
     }
