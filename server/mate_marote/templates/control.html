@@ -8,53 +8,84 @@
 <script type="text/javascript" src="/static/js/logger.js"></script>
 <script type="text/javascript">
     function ControlGame(file){
-        this.trials = $.map(file.trials, function(obj, idx){ obj.idx = idx; return obj; });
+        this.trials = file;
 
-        this.max_incorrectas = file.max_incorrectas;
         var trial_idx = 0,
-            checkpoint = 0;
+            tries_idx = 0,
+            flecha_idx = 0;
 
-        this.trial_idx = function(){
-            return trial_idx;
+        this.current_arrow = function(){
+            var x = this.trials[trial_idx].tries[tries_idx][flecha_idx];
+                x.to_checkpoint = this.trials[trial_idx].nro_flechas - flecha_idx; 
+            return x;
         }
-
-        this.current_trial = function(){
-            return this.trials[trial_idx];
-        }
-
-        this.next_trial = function(){
-            if(trial_idx+1 < this.trials.length){
-                trial_idx++;
-                if(this.current_trial().checkpoint){
-                    checkpoint = trial_idx;
-                }
+        this.next_arrow_wrong = function (){
+            if (tries_idx + 1 < this.trials[trial_idx].nro_tries){
+                tries_idx++;
+                flecha_idx = 0;
                 return true;
             }else{
                 return false;
             }
         }
-
-        this.goto_last_checkpoint = function(){
-            trial_idx = checkpoint;
+        this.next_arrow_correct = function(){
+            if(flecha_idx+1 < this.trials[trial_idx].nro_flechas){
+                flecha_idx++;
+                return true;
+            }else if (trial_idx+1<this.trials.length){
+                trial_idx++;
+                flecha_idx = 0;
+                tries_idx = 0;
+                return true;
+            }else{
+                return false;
+            }
         }
-        
+        this.get_total_trials = function(){
+            var total_trials = 0,
+                i;
+            for (i = 0; i< this.trials.length; i++){
+                total_trials += this.trials[i].nro_flechas;
+            }
+            return total_trials;
+        }
+
+        this.get_puntaje = function(){
+            var x={"puntos":0,"checkpoint":false},
+                last_checkpoint = 0;
+            for (var i = 0; i< trial_idx; i++){
+                last_checkpoint += this.trials[i].nro_flechas;
+            }
+            x.puntos = last_checkpoint + flecha_idx;
+            if (flecha_idx ==0){
+                x.checkpoint = true;
+            }else{
+                x.checkpoint = false;
+            }
+            return x;
+        }
+ 
         this.reset = function(){
             trial_idx = 0;
-            checkpoint = 0;
+            flecha_idx = 0;
+            tries_idx = 0;
         }
     }
 
     function ScoreKeeper($checkpoint_div,$score_div, total_trials){
-        this.total_trials = total_trials;
-        this.div = $score_div;
+        var premio = ['klem.png','alf.png','grinberg.png','monica.png','jung.png','chiche.png','bruno.png','calzetta.png'], //provisorio para la version de prueba
+            premio_idx = 0;
         this.set_score = function(current_trial, checkpoint){
-            this.div.animate({width: current_trial/this.total_trials * 98 + 2 +"%"}, 300);
+            $score_div.animate({width: current_trial/total_trials * 98 + 2 +"%"}, 300);
             if(checkpoint){
-                $checkpoint_div.animate({left:current_trial/this.total_trials * 98 +"%"}, 300);
+                $checkpoint_div.animate({left:current_trial/total_trials * 98 +"%"}, 300);
+                $("img",$checkpoint_div).attr({src: "/static/images/" + premio[premio_idx]});
+                premio_idx++;
             }
         }
         this.reset = function(){
-            this.div.html('');
+            $score_div.html('');
+            premio_idx=0;
             this.set_score(0,true);
         }
     }
@@ -94,25 +125,29 @@
             this.aguja.setAttribute("transform","rotate(0,200,200)");
         }
 
+        this.stop_global = function(){
+            clearInterval(this.timer_global);
+        }
+
+
         this.reset = function(time,$reloj_global, callback){
             var i = 0;
             var scope = this;
             this.recieve_input = false;
             this.$reloj_global = $reloj_global;
-            clearInterval(this.reloj_trial);
             clearInterval(this.timer_global);
             clearInterval(this.reloj_intertrial);
             this.aguja.setAttribute("transform","rotate(0,200,200)");
             this.$reloj_global.animate({width: "0%"},1000);
             
             function animar_global(){
-                i++;
                 scope.$reloj_global.css("width", i + "%");
                 if (i>100){
                     i =0;
                     terminar();
                     clearInterval(scope.timer_global);
                 }
+                i++;
             }
             
             function terminar(){
@@ -135,7 +170,7 @@
         },2000);
     }
 
-    
+// ________________________________ACA EMPIEZA__________________________________    
     $(function(){
         var LEFT_KEY = 97,//a
             RIGHT_KEY = 108,//l
@@ -144,12 +179,8 @@
             $flecha = $('div#flecha'),
             $mensaje = $('div#mensaje'),
             iteracion_reloj = 0,
-            recieve_input = false,
-            posicion,
-            orientacion, //'left','right'
-            incorrectas,
             logger,
-            game_file,
+            //game_file,
             reloj = new TimeKeeper($('div#reloj')),
             current_game, 
             score;
@@ -165,37 +196,43 @@
                 dataType:'json'});
         $.ajax({url:'/static/levels/control_gamefile.txt', async:false, dataType:'json',
                 success:function(x){
-                         game_file = x;
+                        game_file = x;
                 }});
+
         $.ajax({url:'{% url create_stroop_game %}', async:false, dataType:'json',
                 success:function(x){
                          logger = new Logger('{% url save_stroop_game %}', x.game_id);
                 }});
                
         current_game = new ControlGame(game_file);
-        score = new ScoreKeeper($("div#checkpoint"),$("div#puntaje"), game_file.trials.length);
+        score = new ScoreKeeper($("div#checkpoint"),$("div#puntaje"), current_game.get_total_trials());
 
         function presentar_flecha(){
             $flecha.hide();
-            posicion = Math.floor(Math.random()*90);
-            orientacion = ['right','left'][Math.floor(Math.random()*2)];
-            var trial = current_game.current_trial();
-            $('img', $flecha).attr({src:"/static/images/"+ trial.kind +'_'+ orientacion +".png"});
+            var arrow = current_game.current_arrow();
+            $('img', $flecha).attr({src:"/static/images/"+ arrow.kind +'_'+ arrow.orientacion +".png"});
             var reloj_intertrial = setTimeout(function(){
-                $flecha.css("left", posicion + "%" ).show();
-                logger.log("presentaFlecha", {"trial":trial, "posicion":posicion,
-                                              "orientacion":orientacion, "trial_idx":trial.idx});
+                $flecha.css("left", arrow.posicion + "%" ).show();
+                logger.log("presentaFlecha", {"flecha":arrow});
                 set_juez('#3D3D3D');
-                reloj.start_trial(trial.time,function(){
-                        current_game.goto_last_checkpoint();
-                        score.set_score(current_game.current_trial().idx);
-                        presentar_flecha();
+                reloj.start_trial(arrow.time,function(){
+                        set_juez('#C52338');
                         logger.log("timeOut");
+                        if (!current_game.next_arrow_wrong()){
+                            fin();
+                            return;
+                        }
+                        score.set_score(current_game.get_puntaje().puntos);
+                        presentar_flecha();
                 });                
             }, 500);
             reloj.set_intertrial(reloj_intertrial);
         }
-    
+        
+        function fin(){
+            show_message($mensaje,'Erraste demasiadas veces');
+            reloj.stop_global();
+        }
 
         function set_juez(color){
             $juez.css("background-color", color);
@@ -204,7 +241,6 @@
         function reset(){
             current_game.reset();
             score.reset();
-            incorrectas = 0;
             reloj.reset(90000,$("div#tiempo_total"),function(){
                 show_message($mensaje,'Se termino todo el tiempo...(r)ecomenzar')});
             setTimeout(function(){
@@ -222,33 +258,37 @@
                 return; //Lo dejamos errarle a la tecla tranquilo.
             }
             reloj.stop_trial();
-            var correct = (e.which == LEFT_KEY && orientacion == 'left') ||
-                          (e.which == RIGHT_KEY && orientacion == 'right');
+            var arrow = current_game.current_arrow(),
+                puntaje,
+                correct = (e.which == LEFT_KEY && arrow.orientacion == 'left') ||
+                          (e.which == RIGHT_KEY && arrow.orientacion == 'right');
             
-            correct = (current_game.current_trial().kind == 'forward') ? correct : !correct;
-            
-            var correctas = current_game.trial_idx();
+            correct = (arrow.kind == 'forward') ? correct : !correct;
             if(correct){
-                logger.log("respuestaCorrecta", {"correctas":correctas, "incorrectas":incorrectas});
+                var next = current_game.next_arrow_correct();
+                puntaje = current_game.get_puntaje();
+                logger.log("respuestaCorrecta", {"puntos": puntaje.puntos,"dist_to_checkpoint":arrow.to_checkpoint});
                 set_juez('#729D1B');
-               if(!current_game.next_trial()){
+               if(!next){
                     show_message($mensaje,'El teclado mas rápido del oeste - moron, p. ej-', reset);
-                    score.set_score(current_game.trials.length);
+                    score.set_score(current_game.get_total_trials());
                     return;
                 }
-                if(current_game.current_trial().checkpoint){
+                if(puntaje.checkpoint){
                     show_message($mensaje,'Groso, aseguraste puntaje.');
                 }
             }else{
-                incorrectas++;
-                logger.log("respuestaIncorrecta", {"correctas":correctas, "incorrectas":incorrectas});
+                var next = current_game.next_arrow_wrong();
+                puntaje = current_game.get_puntaje();
+                puntaje.checkpoint= false;
+                logger.log("respuestaIncorrecta", {"puntos": puntaje.puntos,"dist_to_checkpoint":arrow.to_checkpoint});
                 set_juez('#C52338');
-                if(incorrectas >= current_game.max_incorrectas){
-                    current_game.goto_last_checkpoint();
+                if (!next){
+                    fin();
+                    return;
                 }
             }
-            var trial = current_game.current_trial();
-            score.set_score(trial.idx, trial.checkpoint);
+            score.set_score(puntaje.puntos, puntaje.checkpoint);
             presentar_flecha();
         }
 
@@ -317,7 +357,7 @@ div#puntaje{
     position: absolute;
     top: 0%;
     left: 0%;
-    height: 5%;
+    height: 10%;
     color:white;
     background-color: #8018BD;
     width: 0%;
@@ -326,7 +366,7 @@ div#puntaje{
 
 div#tiempo_total{
     position: absolute;
-    top: 5%;
+    top: 95%;
     left: 0%;
     height: 5%;
     color:white;
@@ -339,7 +379,7 @@ div#checkpoint{
     position: absolute;
     top: 0%;
     left: 0%;
-    height: 5%;
+    height: 10%;
     background-color: #34104E;
     width: 2%;
 }
@@ -349,9 +389,9 @@ div#checkpoint{
 </head>
 <body>
 <div id="puntaje"></div>
-<div id="tiempo_total"></div>
-<div id="checkpoint"></div>
+<div id="checkpoint"><img style ="margin-left:-10px; margin-top:10px" src=""></div>
 <div id="juez"></div>
+<div id="tiempo_total"></div>
 <div id="reloj"></div>
 <div id="flecha"></div>
 <div id="mensaje"><p></p></div>
