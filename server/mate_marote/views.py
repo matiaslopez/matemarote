@@ -71,6 +71,19 @@ def set_starting_level(request, player, level_attr):
     player.save()
     return json_response(status=200)
 
+@player_selected
+def set_stroop_score(request, player):
+    score = request.POST.get('score')
+    setattr(player, 'stroop_score', score)
+    player.save()
+    return json_response(status=200)
+    
+def get_stroop_score(request, player):
+    score = request.POST.get('score')
+    setattr(player, 'stroop_score', score)
+    player.save()
+    return json_response(status=200)
+
 def index(request, debug=False):
     memory = GameSelectorForm(MemoryGameFile, prefix='memory')
     planning = GameSelectorForm(PlanningGameFile, prefix='planning')

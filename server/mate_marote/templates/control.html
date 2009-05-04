@@ -154,7 +154,6 @@
                 scope.recieve_input = false;
                 clearInterval(scope.reloj_trial);
                 clearTimeout(scope.reloj_intertrial);
-                scope.$reloj_global.animate({width: "0%"},1000);
                 return callback();
             }
             this.timer_global = setInterval(animar_global,time/100);
@@ -232,6 +231,15 @@
         function fin(){
             show_message($mensaje,'Erraste demasiadas veces');
             reloj.stop_global();
+            $.ajax({url:'{% url save_stroop_score %}',
+                async:false,
+                type:'GET',
+                dataType:'json'});
+	       $.ajax({url:'{% url get_stroop_score %}', async:false, dataType:'json',
+                success:function(x){
+                        game_file = x;
+                }});
+            
         }
 
         function set_juez(color){
@@ -241,7 +249,7 @@
         function reset(){
             current_game.reset();
             score.reset();
-            reloj.reset(90000,$("div#tiempo_total"),function(){
+            reloj.reset(120000,$("div#tiempo_total"),function(){
                 show_message($mensaje,'Se termino todo el tiempo...(r)ecomenzar')});
             setTimeout(function(){
                 presentar_flecha();
@@ -384,17 +392,83 @@ div#checkpoint{
     width: 2%;
 }
 
+div#highscore{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 10%;
+    background-color: transparent;
+    width: 20%;
+    height: 60%;
+    margin-left: -10%;
+    margin-top: -15%;
+}
+th {
+	font: bold 18px "Trebuchet MS", Verdana, Arial, Helvetica,
+	sans-serif;
+	color: #6D929B;
+	border-right: 1px solid #C1DAD7;
+	border-bottom: 1px solid #C1DAD7;
+	border-top: 1px solid #C1DAD7;
+	letter-spacing: 3px;
+	text-transform: uppercase;
+	text-align: center;
+	padding: 12px 12px 12px 24px;
+	background: #CAE8EA;
+}
+
+th.nobg {
+	color: #E79978;
+	border-top: 0;
+	border-left: 0;
+	border-right: 1px solid #C1DAD7;
+	background: #FBDDD1;
+}
 
 </style>
 </head>
 <body>
 <div id="puntaje"></div>
-<div id="checkpoint"><img style ="margin-left:-10px; margin-top:10px" src=""></div>
 <div id="juez"></div>
+<div id="checkpoint"><img style ="margin-left:-10px; margin-top:10px" src="/static/images/klem.png"></div>
 <div id="tiempo_total"></div>
 <div id="reloj"></div>
 <div id="flecha"></div>
 <div id="mensaje"><p></p></div>
+<div id="highscore" align="center"><table>
+                        <tr>
+                            <th class="nobg"> Puesto </th>
+                            <th class="nobg"> El kia </th>
+                        </tr>
+                        <tr>
+                            <th> 1º <img src="/static/images/alf.png"></th>
+                            <th> Carlos Alberto Diaz </th>
+                        </tr>
+                        <tr>
+                            <th> 2º </th>
+                            <th> Pepe2 </th>
+                        </tr>
+                        <tr>
+                            <th> 3º </th>
+                            <th> Pepe2 </th>
+                        </tr>
+                        <tr>
+                            <th> 4º </th>
+                            <th> Pepe2 </th>
+                        </tr>
+                        <tr>
+                            <th> 5º </th>
+                            <th> Pepe2 </th>
+                        </tr>
+                        <tr>
+                            <th> 6º </th>
+                            <th> Pepe2 </th>
+                        </tr>
+                        <tr>
+                            <th> 7º </th>
+                            <th> Pepe2 </th>
+                        </tr>
+                    </table></div>
 </body>
 </html>
 
