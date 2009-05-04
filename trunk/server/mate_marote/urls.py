@@ -31,6 +31,8 @@ urlpatterns = patterns('',
     url(r'^control/$', show_control, name='control'),
     url(r'^create_stroop_game/$', create_game , {'game_class': StroopGame }, name="create_stroop_game"),
     url(r'^save_stroop_game/$', save_game , {'game_class': StroopGame }, name="save_stroop_game"),
+    url(r'^save_stroop_score/$', set_stroop_score , name="save_stroop_score"),
+    url(r'^get_stroop_score/$', get_stroop_score , name="get_stroop_score"),
     
     #Admin
     url(r'^admin/(.*)', admin.site.root),

@@ -33,6 +33,7 @@ class Player(models.Model, Named):
     created = models.DateTimeField(default=datetime.datetime.now)
     starting_memory_level = models.IntegerField(null=True, default=0)
     starting_planning_level = models.IntegerField(null=True, default=0)
+    stroop_score = models.IntegerField(null=True,default = 0)
 
 class LogEntry(models.Model):
     game = models.ForeignKey('Game', related_name='log_entries')
