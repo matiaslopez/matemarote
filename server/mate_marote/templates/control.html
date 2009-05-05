@@ -136,7 +136,8 @@
             this.recieve_input = false;
             this.$reloj_global = $reloj_global;
             clearInterval(this.timer_global);
-            clearInterval(this.reloj_intertrial);
+            clearInterval(scope.reloj_trial);
+            clearTimeout(this.reloj_intertrial);
             this.aguja.setAttribute("transform","rotate(0,200,200)");
             this.$reloj_global.animate({width: "0%"},1000);
             
@@ -144,8 +145,8 @@
                 scope.$reloj_global.css("width", i + "%");
                 if (i>100){
                     i =0;
-                    terminar();
                     clearInterval(scope.timer_global);
+                    terminar();
                 }
                 i++;
             }
@@ -181,7 +182,8 @@
             logger,
             //game_file,
             reloj = new TimeKeeper($('div#reloj')),
-            current_game, 
+            current_game,
+            tabla, 
             score;
         
         var player_name = '';
@@ -193,7 +195,7 @@
                 data:{'player_name': player_name},
                 type:'POST',
                 dataType:'json'});
-        $.ajax({url:'/static/levels/control_gamefile.txt', async:false, dataType:'json',
+        $.ajax({url:'/static/levels/control/control_gamefile'+Math.floor(Math.random()*7)+'.txt', async:false, dataType:'json',
                 success:function(x){
                         game_file = x;
                 }});
@@ -218,7 +220,7 @@
                         set_juez('#C52338');
                         logger.log("timeOut");
                         if (!current_game.next_arrow_wrong()){
-                            fin();
+                            fin(current_game.get_puntaje().puntos);
                             return;
                         }
                         score.set_score(current_game.get_puntaje().puntos);
@@ -228,17 +230,30 @@
             reloj.set_intertrial(reloj_intertrial);
         }
         
-        function fin(){
+        function fin(puntos){
+        	var premio = ['klem.png','alf.png','grinberg.png','monica.png','jung.png','chiche.png','bruno.png','calzetta.png'] // provisorio
             show_message($mensaje,'Erraste demasiadas veces');
             reloj.stop_global();
             $.ajax({url:'{% url save_stroop_score %}',
                 async:false,
-                type:'GET',
+                type:'POST',
+                data:{'score': puntos},
                 dataType:'json'});
 	       $.ajax({url:'{% url get_stroop_score %}', async:false, dataType:'json',
-                success:function(x){
-                        game_file = x;
+                success:function(response){
+                        tabla = response.x;
                 }});
+                
+            console.log("la tabla ", tabla);
+            tabla.reverse();
+            
+            for (i=0; i<=6; i++){
+            	$('img','th:eq('+(3*i+3)+')').attr({"src":"/static/images/"+premio[Math.floor(tabla[i].stroop_score/30)]});
+            	console.log("el numero de preimio: ", Math.floor(tabla[i].stroop_score/30));
+            	$('th:eq('+(3*i+4)+')').text(tabla[i].stroop_score);
+            	$('th:eq('+(3*i+5)+')').text(tabla[i].name);
+            }
+            $("div#highscore").show('slow');    
             
         }
 
@@ -250,7 +265,10 @@
             current_game.reset();
             score.reset();
             reloj.reset(120000,$("div#tiempo_total"),function(){
-                show_message($mensaje,'Se termino todo el tiempo...(r)ecomenzar')});
+                show_message($mensaje,'Se termino todo el tiempo...(r)ecomenzar')
+                logger.log("finJuego",{"puntaje": current_game.get_puntaje().puntos})
+                });
+            $("div#highscore").hide();    
             setTimeout(function(){
                 presentar_flecha();
                 $mensaje.hide();
@@ -292,7 +310,7 @@
                 logger.log("respuestaIncorrecta", {"puntos": puntaje.puntos,"dist_to_checkpoint":arrow.to_checkpoint});
                 set_juez('#C52338');
                 if (!next){
-                    fin();
+                    fin(puntaje.puntos);
                     return;
                 }
             }
@@ -393,15 +411,15 @@ div#checkpoint{
 }
 
 div#highscore{
+	display: none;
     position: absolute;
-    top: 50%;
+    top: 5%;
     left: 50%;
-    height: 10%;
+    height: 100%;
     background-color: transparent;
-    width: 20%;
+    width: 50%;
     height: 60%;
-    margin-left: -10%;
-    margin-top: -15%;
+    margin-left: -25%;
 }
 th {
 	font: bold 18px "Trebuchet MS", Verdana, Arial, Helvetica,
@@ -413,7 +431,7 @@ th {
 	letter-spacing: 3px;
 	text-transform: uppercase;
 	text-align: center;
-	padding: 12px 12px 12px 24px;
+	padding: 1px 1px 1px 2px;
 	background: #CAE8EA;
 }
 
@@ -437,35 +455,43 @@ th.nobg {
 <div id="mensaje"><p></p></div>
 <div id="highscore" align="center"><table>
                         <tr>
-                            <th class="nobg"> Puesto </th>
+                        	<th class="nobg"> Puesto </th>
+                            <th class="nobg"> Puntos </th>
                             <th class="nobg"> El kia </th>
                         </tr>
                         <tr>
-                            <th> 1º <img src="/static/images/alf.png"></th>
+                            <th> 1º <img src=""></th>
+                            <th>0</th>
                             <th> Carlos Alberto Diaz </th>
                         </tr>
                         <tr>
-                            <th> 2º </th>
+                            <th> 2º <img src=""></th>
+                            <th>0</th>
                             <th> Pepe2 </th>
                         </tr>
                         <tr>
-                            <th> 3º </th>
+                            <th> 3º <img src=""></th>
+                            <th>0</th>
                             <th> Pepe2 </th>
                         </tr>
                         <tr>
-                            <th> 4º </th>
+                            <th> 4º <img src=""></th>
+                            <th>0</th>
                             <th> Pepe2 </th>
                         </tr>
                         <tr>
-                            <th> 5º </th>
+                            <th> 5º <img src=""></th>
+                            <th>0</th>
                             <th> Pepe2 </th>
                         </tr>
                         <tr>
-                            <th> 6º </th>
+                            <th> 6º <img src=""></th>
+                            <th>0</th>
                             <th> Pepe2 </th>
                         </tr>
                         <tr>
-                            <th> 7º </th>
+                            <th> 7º <img src=""></th>
+                            <th>0</th>
                             <th> Pepe2 </th>
                         </tr>
                     </table></div>

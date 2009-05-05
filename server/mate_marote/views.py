@@ -78,11 +78,9 @@ def set_stroop_score(request, player):
     player.save()
     return json_response(status=200)
     
-def get_stroop_score(request, player):
-    score = request.POST.get('score')
-    setattr(player, 'stroop_score', score)
-    player.save()
-    return json_response(status=200)
+def get_stroop_score(request):
+    x = Player.objects.order_by('stroop_score')
+    return json_response(status=200,x=x)
 
 def index(request, debug=False):
     memory = GameSelectorForm(MemoryGameFile, prefix='memory')
