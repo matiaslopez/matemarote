@@ -253,7 +253,7 @@
             	$('th:eq('+(3*i+4)+')').text(tabla[i].stroop_score);
             	$('th:eq('+(3*i+5)+')').text(tabla[i].name);
             }
-            $("div#highscore").show('slow');    
+            $("div#highscore").show();    
             
         }
 
@@ -264,9 +264,10 @@
         function reset(){
             current_game.reset();
             score.reset();
-            reloj.reset(120000,$("div#tiempo_total"),function(){
-                show_message($mensaje,'Se termino todo el tiempo...(r)ecomenzar')
-                logger.log("finJuego",{"puntaje": current_game.get_puntaje().puntos})
+            reloj.reset(240000,$("div#tiempo_total"),function(){
+                show_message($mensaje,'Se termino todo el tiempo...(r)ecomenzar');
+                logger.log("finJuego",{"puntaje": current_game.get_puntaje().puntos});
+                fin(current_game.get_puntaje().puntos);
                 });
             $("div#highscore").hide();    
             setTimeout(function(){
