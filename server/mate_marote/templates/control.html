@@ -167,7 +167,7 @@
         setTimeout(function(){
             $div.fadeOut();
             callback && callback();
-        },2000);
+        },3000);
     }
 
 // ________________________________ACA EMPIEZA__________________________________    
@@ -239,21 +239,22 @@
                 type:'POST',
                 data:{'score': puntos},
                 dataType:'json'});
+	       
 	       $.ajax({url:'{% url get_stroop_score %}', async:false, dataType:'json',
                 success:function(response){
                         tabla = response.x;
                 }});
                 
-            console.log("la tabla ", tabla);
+            //console.log("la tabla ", tabla);
             tabla.reverse();
-            
+             
             for (i=0; i<=6; i++){
             	$('img','th:eq('+(3*i+3)+')').attr({"src":"/static/images/"+premio[Math.floor(tabla[i].stroop_score/30)]});
-            	console.log("el numero de preimio: ", Math.floor(tabla[i].stroop_score/30));
+            	//console.log("el numero de preimio: ", Math.floor(tabla[i].stroop_score/30));
             	$('th:eq('+(3*i+4)+')').text(tabla[i].stroop_score);
             	$('th:eq('+(3*i+5)+')').text(tabla[i].name);
             }
-            $("div#highscore").show();    
+            $("div#highscore").show(2000);
             
         }
 
@@ -416,7 +417,7 @@ div#highscore{
     position: absolute;
     top: 5%;
     left: 50%;
-    height: 100%;
+    height: 90%;
     background-color: transparent;
     width: 50%;
     height: 60%;
