@@ -4,7 +4,7 @@ my $N = 8;
 my $archivo_string='gamefile =[';
 my @tipos = ('forward','inverse');
 my @orientaciones =('right','left');
-my $trial = '{"nro_flechas":30, "nro_tries":3,"tries":[';
+my $trial = '{"nro_flechas":20, "nro_tries":3,"tries":[';
 for (my $i=0;$i<=$N;$i++){
 	
 	my $x;
