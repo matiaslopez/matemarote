@@ -73,10 +73,11 @@ def set_starting_level(request, player, level_attr):
 
 @player_selected
 def set_stroop_score(request, player):
-    score = request.POST.get('score')
-    if (int(score) > int(player.stroop_score)):
+    score = int(request.POST.get('score'))
+    if (score > player.stroop_score):
         setattr(player, 'stroop_score', score)
         player.save()
+    
     return json_response(status=200)
 
 def get_stroop_score(request):

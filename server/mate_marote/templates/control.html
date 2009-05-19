@@ -249,7 +249,7 @@
             tabla.reverse();
              
             for (i=0; i<=6; i++){
-            	$('img','th:eq('+(3*i+3)+')').attr({"src":"/static/images/"+premio[Math.floor(tabla[i].stroop_score/30)]});
+            	$('img','th:eq('+(3*i+3)+')').attr({"src":"/static/images/"+premio[Math.floor(tabla[i].stroop_score/20)]});
             	//console.log("el numero de preimio: ", Math.floor(tabla[i].stroop_score/30));
             	$('th:eq('+(3*i+4)+')').text(tabla[i].stroop_score);
             	$('th:eq('+(3*i+5)+')').text(tabla[i].name);
@@ -265,7 +265,7 @@
         function reset(){
             current_game.reset();
             score.reset();
-            reloj.reset(240000,$("div#tiempo_total"),function(){
+            reloj.reset(160000,$("div#tiempo_total"),function(){
                 show_message($mensaje,'Se termino todo el tiempo...(r)ecomenzar');
                 logger.log("finJuego",{"puntaje": current_game.get_puntaje().puntos});
                 fin(current_game.get_puntaje().puntos);
