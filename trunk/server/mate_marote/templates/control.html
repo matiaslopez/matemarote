@@ -73,8 +73,9 @@
     }
 
     function ScoreKeeper($checkpoint_div,$score_div, total_trials){
-        var premio = ['klem.png','alf.png','grinberg.png','monica.png','jung.png','chiche.png','bruno.png','calzetta.png'], //provisorio para la version de prueba
+        var premio = ['klem.png','alf.png','monica.png','jung.png','chiche.png','bruno.png','grinberg.png','solomonoff.png','rial.png','canosa.png','cartman.png','calzetta.png']; //provisorio para la version de prueba
             premio_idx = 0;
+            console.log(total_trials);
         this.set_score = function(current_trial, checkpoint){
             $score_div.animate({width: current_trial/total_trials * 98 + 2 +"%"}, 300);
             if(checkpoint){
@@ -231,7 +232,7 @@
         }
         
         function fin(puntos){
-        	var premio = ['klem.png','alf.png','grinberg.png','monica.png','jung.png','chiche.png','bruno.png','calzetta.png'] // provisorio
+        	var premio = ['klem.png','alf.png','monica.png','jung.png','chiche.png','bruno.png','grinberg.png','solomonoff.png','rial.png','canosa.png','cartman.png','calzetta.png']; //provisorio para la version de prueba
             show_message($mensaje,'Erraste demasiadas veces');
             reloj.stop_global();
             $.ajax({url:'{% url save_stroop_score %}',
@@ -254,7 +255,10 @@
             	$('th:eq('+(3*i+4)+')').text(tabla[i].stroop_score);
             	$('th:eq('+(3*i+5)+')').text(tabla[i].name);
             }
+            setTimeout(function(){
             $("div#highscore").show(2000);
+            },1500);
+            show_message($mensaje,'Hiciste '+ puntos +' puntos, ¿estas entre los grosos?');
             
         }
 
@@ -321,6 +325,9 @@
         }
 
         $(document).keypress(handle_response);
+        for (i=0;i<12;i++){
+            var myDiv = $('<div index = 0 class =checkpoint style = "left:'+(98/11*i)+'%;background-color:gray"/>').prependTo(document.body);
+        }
         
         $flecha.append('<img src="#">');
         reset();
@@ -403,7 +410,7 @@ div#tiempo_total{
 
 }
 
-div#checkpoint{
+div.checkpoint{
     position: absolute;
     top: 0%;
     left: 0%;
@@ -450,7 +457,7 @@ th.nobg {
 <body>
 <div id="puntaje"></div>
 <div id="juez"></div>
-<div id="checkpoint"><img style ="margin-left:-10px; margin-top:10px" src="/static/images/klem.png"></div>
+<div id="checkpoint" class="checkpoint"><img style ="margin-left:-10px; margin-top:10px" src="/static/images/klem.png"></div>
 <div id="tiempo_total"></div>
 <div id="reloj"></div>
 <div id="flecha"></div>

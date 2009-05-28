@@ -71,43 +71,13 @@
 
 	<div class="juego">
 		<h2>Stroop</h2>
-		<p>hace click a la flecha viteh.</p>
+		<p>A para flecha izq, L para la derecha. R para restart. Si es naranja tenes que contestar para el otro lado</p>
 		<form action="{% url control %}" method="get">
 			<input type="submit" value="Jugar" class="button"/>
 		</form>
 	</div>
 	
-	<div class="juego">
-		<h2>Barba roja</h2>
-		<p>Econtr&aacute; la pelotita amarilla.</p>
-		<form action="{% url dummygame "redbeard" %}" method="get">
-			<input type="submit" value="Jugar" class="button"/>
-		</form>
-	</div>
 	
-	<div class="juego">
-		<h2>Rally</h2>
-		<p>Consegu&iacute; el mejor tiempo en cada pista.</p>
-		<form action="{% url dummygame "rally" %}" method="get">
-			<input type="submit" value="Jugar" class="button"/>
-		</form>
-	</div>
-	
-	<div class="juego">
-        <h2>Regalos</h2>
-        <p>Atrap&aacute; todos los regalos!!</p>
-        <form action="{% url dummygame "habilidad-cogeregalos" %}" method="get">
-            <input type="submit" value="Jugar" class="button"/>
-        </form>
-    </div>
-    
-    <div class="juego">
-        <h2>Explotar Globos</h2>
-        <p>Explot&aacute; la mayor cantidad de globos antes de quedarte sin tiempo.</p>
-        <form action="{% url dummygame "ballonsshot" %}" method="get">
-            <input type="submit" value="Jugar" class="button"/>
-        </form>
-    </div>
 	
 </body>
 </html>

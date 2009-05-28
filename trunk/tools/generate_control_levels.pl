@@ -1,11 +1,11 @@
 #!/usr/bin/perl
 for ($iter_arch = 0; $iter_arch <= 6; $iter_arch++){
-my $N = 8;
+my $N = 11;
 my $archivo_string='gamefile =[';
 my @tipos = ('forward','inverse');
 my @orientaciones =('right','left');
 my $trial = '{"nro_flechas":20, "nro_tries":3,"tries":[';
-for (my $i=0;$i<=$N;$i++){
+for (my $i=0;$i<$N;$i++){
 	
 	my $x;
     $archivo_string = $archivo_string.$trial;
